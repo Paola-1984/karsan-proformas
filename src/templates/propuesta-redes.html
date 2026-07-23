@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Propuesta de Manejo de Redes Sociales — Urovida</title>
+<style>
+  :root{
+    --blue:#1BA0D8;
+    --blue-dark:#0E6FA3;
+    --green:#4CAF3C;
+    --green-dark:#357A28;
+    --navy:#14213D;
+    --bg:#F4FAFB;
+    --card:#FFFFFF;
+    --text:#243244;
+    --muted:#6B7A8D;
+    --border:#E3EEF1;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI',Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.5;
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px 60px;}
+
+  /* HEADER */
+  header{
+    background:linear-gradient(120deg,var(--blue-dark),var(--blue) 55%,var(--green));
+    color:#fff;
+    padding:34px 24px 46px;
+  }
+  .header-top{
+    max-width:1000px;margin:0 auto;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;
+  }
+  .brandmark{display:flex;align-items:center;gap:10px;}
+  .brandmark .urovida-logo{height:48px;display:block;background:#fff;border-radius:10px;padding:5px 12px;}
+  .karsan-chip{
+    background:var(--navy);border-radius:10px;padding:8px 14px;display:flex;align-items:center;
+  }
+  .karsan-chip img{height:26px;display:block;}
+  .header-title{max-width:1000px;margin:34px auto 0;}
+  .eyebrow{
+    display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);
+    padding:4px 12px;border-radius:20px;font-size:12.5px;font-weight:600;letter-spacing:.4px;margin-bottom:14px;
+  }
+  h1{font-size:30px;margin:0 0 8px;font-weight:800;}
+  header p.sub{margin:0;font-size:15.5px;opacity:.95;max-width:640px;}
+
+  /* SECTIONS */
+  section{margin-top:34px;}
+  .card{
+    background:var(--card);border:1px solid var(--border);border-radius:14px;
+    padding:26px 28px;box-shadow:0 2px 10px rgba(20,33,61,.04);
+  }
+  h2{
+    font-size:20px;color:var(--navy);margin:0 0 6px;font-weight:800;
+    display:flex;align-items:center;gap:10px;
+  }
+  h2 .tag{
+    width:8px;height:22px;border-radius:4px;background:linear-gradient(var(--blue),var(--green));display:inline-block;
+  }
+  .section-desc{color:var(--muted);font-size:14.5px;margin:0 0 20px;}
+
+  /* DIAGNOSTIC / FOLLOWERS CHART */
+  .diag-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+  @media(max-width:760px){.diag-grid{grid-template-columns:1fr;}}
+  .diag-box{border:1px solid var(--border);border-radius:12px;padding:18px 18px 8px;}
+  .diag-box h3{font-size:14.5px;margin:0 0 14px;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .bar-label{width:92px;font-size:13px;color:var(--muted);flex-shrink:0;}
+  .bar-track{flex:1;background:#EEF4F6;border-radius:8px;height:22px;position:relative;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;font-size:12px;font-weight:700;white-space:nowrap;}
+  .fill-fb{background:#4267B2;}
+  .fill-ig{background:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF);}
+  .fill-tt{background:#111;}
+  .badge-new{display:inline-block;font-size:11px;background:#FBEAEA;color:#B23B3B;padding:2px 8px;border-radius:20px;margin-left:8px;font-weight:700;}
+  .badge-strong{display:inline-block;font-size:11px;background:#EAF7EC;color:#2E7D32;padding:2px 8px;border-radius:20px;margin-left:8px;font-weight:700;}
+
+  /* CALLOUT */
+  .callout{
+    border-left:5px solid var(--green);background:#F2FBF1;border-radius:10px;
+    padding:18px 20px;margin-top:20px;
+  }
+  .callout h3{margin:0 0 10px;font-size:15.5px;color:var(--green-dark);}
+  .callout ol{margin:0;padding-left:20px;font-size:14.5px;}
+  .callout li{margin-bottom:8px;}
+  .callout small{display:block;margin-top:12px;color:var(--muted);}
+
+  /* PLATFORM ROW */
+  .platform-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:18px;}
+  .plat{
+    display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);
+    padding:8px 14px;border-radius:30px;font-size:13.5px;font-weight:600;color:var(--navy);
+  }
+  .plat .dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800;}
+  .dot-fb{background:#4267B2;} .dot-ig{background:linear-gradient(135deg,#F58529,#DD2A7B,#8134AF);}
+  .dot-tt{background:#111;} .dot-gmb{background:#0F9D58;} .dot-ga{background:#4285F4;} .dot-meta{background:#0866FF;}
+
+  /* INCLUDES GRID */
+  .incl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px;}
+  @media(max-width:760px){.incl-grid{grid-template-columns:1fr 1fr;}}
+  .incl-item{background:var(--bg);border-radius:10px;padding:14px;text-align:center;font-size:13px;font-weight:600;color:var(--navy);border:1px solid var(--border);}
+  .incl-item .ic{font-size:20px;display:block;margin-bottom:6px;}
+
+  /* PRICING */
+  .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:6px;}
+  @media(max-width:860px){.plans{grid-template-columns:1fr;}}
+  .plan{
+    border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;
+    background:#fff;
+  }
+  .plan-head{padding:18px 20px;color:#fff;}
+  .plan.esencial .plan-head{background:linear-gradient(120deg,#8a6d3b,#b9985a);}
+  .plan.pro .plan-head{background:linear-gradient(120deg,#3a4a63,#5c7599);}
+  .plan.empresarial .plan-head{background:linear-gradient(120deg,#2c2c2c,#4a4a4a);}
+  .plan.pro{transform:translateY(-6px);box-shadow:0 10px 24px rgba(20,33,61,.12);border-color:var(--blue);}
+  .plan-head{position:relative;}
+  .plan-head .ribbon{
+    position:absolute;top:-1px;right:-1px;background:linear-gradient(90deg,var(--green),var(--blue));
+    color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.4px;padding:5px 12px 5px 14px;
+    border-bottom-left-radius:10px;text-transform:uppercase;
+  }
+  .plan-head .name{font-size:18px;font-weight:800;margin:0 0 4px;}
+  .plan-head .desc{font-size:12.5px;opacity:.9;margin:0;}
+  .upgrade-path{
+    margin-top:16px;background:#EAF6FC;border:1px dashed var(--blue);border-radius:10px;
+    padding:14px 18px;font-size:13.5px;color:var(--navy);
+  }
+  .upgrade-path b{color:var(--blue-dark);}
+  .orange-box{
+    margin-top:16px;background:#FFF3E6;border:1px solid #F5C48A;border-left:5px solid #E67E22;
+    border-radius:10px;padding:16px 20px;font-size:13.8px;color:var(--navy);
+  }
+  .orange-box h4{margin:0 0 8px;font-size:14.5px;color:#B9600F;}
+  .badge-orange{display:inline-block;font-size:11px;background:#FFE8CC;color:#B9600F;padding:2px 8px;border-radius:20px;margin-left:8px;font-weight:700;}
+  .min-term{
+    display:inline-block;margin-top:8px;font-size:11.5px;font-weight:700;color:var(--navy);
+    background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:3px 10px;
+  }
+  .plan-body{padding:18px 20px;flex:1;display:flex;flex-direction:column;}
+  .plan-body ul{list-style:none;margin:0 0 16px;padding:0;font-size:13.5px;}
+  .plan-body li{padding:6px 0;border-bottom:1px dashed var(--border);display:flex;gap:8px;}
+  .plan-body li::before{content:"✓";color:var(--green-dark);font-weight:800;}
+  .plan-price{margin-top:auto;padding-top:12px;border-top:1px solid var(--border);}
+  .price-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+  .price-row .num{font-size:22px;font-weight:800;color:var(--navy);}
+  .price-row .lbl{font-size:11.5px;color:var(--muted);text-align:right;}
+  .price-tip{font-size:11px;color:var(--muted);margin-top:6px;}
+
+  /* SAVINGS TABLE */
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:10px;}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
+  th{color:var(--navy);font-size:12.5px;text-transform:uppercase;letter-spacing:.4px;}
+  tr:last-child td{font-weight:800;color:var(--navy);border-bottom:none;background:#F2FBF1;}
+
+  /* NOTES */
+  .notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
+  @media(max-width:760px){.notes-grid{grid-template-columns:1fr;}}
+  .note{background:var(--bg);border-radius:10px;padding:14px 16px;font-size:13.5px;border:1px solid var(--border);}
+  .note b{color:var(--navy);}
+  .warn{border-left:5px solid #E0A400;background:#FFF8E6;border-radius:10px;padding:16px 18px;margin-top:20px;font-size:14px;}
+  .warn b{color:#8a6300;}
+
+  footer{
+    background:var(--navy);color:#fff;margin-top:40px;border-radius:14px;
+    padding:28px;text-align:center;
+  }
+  footer .fk{height:34px;margin-bottom:14px;}
+  footer p{margin:4px 0;font-size:13.5px;opacity:.9;}
+  footer a{color:#9ad9f0;text-decoration:none;}
+  .cta{
+    display:inline-block;margin-top:14px;background:linear-gradient(90deg,var(--blue),var(--green));
+    padding:10px 26px;border-radius:30px;font-weight:700;font-size:14px;color:#fff;
+  }
+
+  /* BENEFITS GRID */
+  .benefits-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px;}
+  @media(max-width:760px){.benefits-grid{grid-template-columns:1fr 1fr;}}
+  .benefit{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;}
+  .benefit .dot2{width:10px;height:10px;border-radius:3px;background:linear-gradient(var(--blue),var(--green));display:inline-block;margin-bottom:8px;}
+  .benefit h4{font-size:13px;margin:0 0 6px;color:var(--navy);}
+  .benefit p{font-size:12px;color:var(--muted);margin:0;}
+
+  /* PROMO BANNER */
+  .promo{
+    display:flex;align-items:center;gap:14px;background:linear-gradient(90deg,#0E6FA3,#357A28);
+    color:#fff;border-radius:12px;padding:14px 20px;margin-bottom:18px;flex-wrap:wrap;
+  }
+  .promo .ball{font-size:26px;}
+  .promo b{font-size:14.5px;}
+  .promo span.small{display:block;font-size:12px;opacity:.9;font-weight:400;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="brandmark">
+      <img class="urovida-logo" src="urovida_compact.png" alt="Urovida">
+    </div>
+    <div class="karsan-chip">
+      <img src="karsan_logo.png" alt="Karsan Digital">
+    </div>
+  </div>
+  <div class="header-title">
+    <span class="eyebrow">PROPUESTA 1 DE 2 · REDES SOCIALES</span>
+    <h1>Manejo de Redes Sociales &amp; Campañas Digitales</h1>
+    <p class="sub">Preparado para Urovida — Medicina de Alta Especialidad by Dr. Israel Costales. Facebook · Instagram · TikTok · Google My Business · Campañas en Meta y TikTok Ads (todos los planes) · Google Ads (planes Pro y Empresarial).</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- DIAGNÓSTICO -->
+  <section class="card">
+    <h2><span class="tag"></span>Diagnóstico de marca: dónde está parada Urovida hoy</h2>
+    <p class="section-desc">Comparamos las cuentas nuevas de "Urovida" contra las cuentas personales del Dr. Israel Costales. La diferencia es enorme y cambia por completo la estrategia recomendada.</p>
+    <div class="diag-grid">
+      <div class="diag-box">
+        <h3>Cuentas nuevas "Urovida" <span class="badge-new">Recién creadas</span></h3>
+        <div class="bar-row"><div class="bar-label">Facebook</div><div class="bar-track"><div class="bar-fill fill-fb" style="width:14%">34</div></div></div>
+        <div class="bar-row"><div class="bar-label">Instagram</div><div class="bar-track"><div class="bar-fill fill-ig" style="width:13%">32</div></div></div>
+        <div class="bar-row"><div class="bar-label">TikTok</div><div class="bar-track"><div class="bar-fill fill-tt" style="width:8%">15</div></div></div>
+      </div>
+      <div class="diag-box">
+        <h3>Cuentas personales Dr. Israel Costales <span class="badge-strong">Ya posicionadas</span></h3>
+        <div class="bar-row"><div class="bar-label">Instagram</div><div class="bar-track"><div class="bar-fill fill-ig" style="width:98%">7,200</div></div></div>
+        <div class="bar-row"><div class="bar-label">Facebook</div><div class="bar-track"><div class="bar-fill fill-fb" style="width:22%">377*</div></div></div>
+        <p style="font-size:11.5px;color:var(--muted);margin-top:2px;">*Cifra referencial de Facebook personal — la confirmamos contigo antes de iniciar.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <h3>🟢 Recomendación: no empezar de cero, migrar lo que ya funciona</h3>
+      <ol>
+        <li>Usar las cuentas personales del Dr. Israel Costales (7,200 seguidores en Instagram) como base de la nueva marca Urovida — ese alcance ya está ganado y no se puede comprar de un día para otro.</li>
+        <li>Cambiar el nombre de usuario y el nombre visible de la página/perfil a <b>Urovida</b>.</li>
+        <li>Actualizar foto de perfil, portada y biografía con la identidad de Urovida, agregando la línea <b>"by Dr. Israel Costales"</b> para conservar el respaldo del médico.</li>
+        <li>Dar de baja las cuentas nuevas de Urovida (IG 32, FB 34, TikTok 15) para no duplicar marca ni confundir al público.</li>
+        <li>Resultado: se conserva todo el seguimiento e historial ya construido, sin reconstruir audiencia desde cero.</li>
+        <li><b>Mantener Instagram activo:</b> se sugiere mantener esta red social, ya que el Dr. Israel, al ser la única figura de la marca, es importante que tenga esta cuenta activa.</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- QUE INCLUYE -->
+  <section class="card">
+    <h2><span class="tag"></span>Qué incluye cualquier plan contratado</h2>
+    <p class="section-desc">Sin importar el plan que elijas, siempre trabajamos de forma integral sobre estas 3 plataformas, con campañas en Meta y TikTok Ads incluidas en todos los planes. <b>Las campañas en Google Ads están disponibles a partir del plan Pro</b> (Pro y Empresarial).</p>
+    <div class="platform-row">
+      <div class="plat"><span class="dot dot-fb">f</span>Facebook</div>
+      <div class="plat"><span class="dot dot-ig">IG</span>Instagram</div>
+      <div class="plat"><span class="dot dot-tt">TT</span>TikTok</div>
+    </div>
+    <div class="incl-grid">
+      <div class="incl-item"><span class="ic">📅</span>Contenido publicado en las 3 redes cada mes</div>
+      <div class="incl-item"><span class="ic">🎯</span>Campañas en Meta (Facebook + Instagram)</div>
+      <div class="incl-item"><span class="ic">🎵</span>Campañas en TikTok Ads</div>
+      <div class="incl-item"><span class="ic">🔎</span>Campañas en Google Ads <small style="display:block;font-weight:400;color:var(--muted);">(solo planes Pro y Empresarial)</small></div>
+      <div class="incl-item"><span class="ic">📊</span>Informe mensual de resultados</div>
+      <div class="incl-item"><span class="ic">🧭</span>Estrategia, asesoría y análisis de nicho</div>
+    </div>
+    <div class="warn"><b>Importante:</b> el precio del plan cubre estrategia, creación de contenido y configuración/optimización de campañas. El <b>presupuesto de pauta publicitaria</b> (la inversión que Meta, TikTok o Google cobran para mostrar los anuncios) <b>es adicional y corre por cuenta del cliente</b>, quien debe mantener una tarjeta de crédito o débito vinculada a cada plataforma.</div>
+  </section>
+
+  <!-- PLANES -->
+  <section>
+    <div class="card" style="margin-bottom:0;">
+      <h2><span class="tag"></span>Planes de manejo de redes sociales</h2>
+      <p class="section-desc">Estos planes están diseñados en base a la marca Urovida y su etapa actual de crecimiento. Precios + IVA. Elige "Sin contrato" para mayor flexibilidad, o "Contrato 12 meses" con tarifa preferencial.</p>
+      <div class="promo">
+        <span class="ball">🏆</span>
+        <div><b>OFERTA MUNDIALISTA</b><span class="small">Precios preferenciales válidos hasta el 31 de julio. Después de esta fecha, los planes vuelven a su tarifa regular.</span></div>
+      </div>
+    </div>
+    <div class="plans" style="margin-top:18px;">
+
+      <div class="plan esencial">
+        <div class="plan-head">
+          <p class="name">Esencial</p>
+          <p class="desc">Configuración inicial sólida + plan de contenido básico.</p>
+        </div>
+        <div class="plan-body">
+          <ul>
+            <li>Configuración de cuentas (Meta Ads + TikTok Ads)</li>
+            <li>Investigación, asesoría y análisis de nicho</li>
+            <li>8 posts mensuales</li>
+            <li>4 videos en formato Reel</li>
+            <li>15 copys personalizados</li>
+            <li>3 campañas de interacción en Meta y TikTok Ads</li>
+            <li>Informe básico mensual</li>
+          </ul>
+          <div class="plan-price">
+            <div class="price-row"><span class="num">$750</span><span class="lbl">/mes + IVA<br>Sin contrato</span></div>
+            <div class="price-row"><span class="num">$550</span><span class="lbl">/mes + IVA<br>Contrato 12 meses</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="plan pro">
+        <div class="plan-head">
+          <span class="ribbon">Recomendado para arrancar</span>
+          <p class="name">Pro</p>
+          <p class="desc">Contenido más intenso + campañas orientadas a resultados. Incluye Google My Business.</p>
+        </div>
+        <div class="plan-body">
+          <ul>
+            <li>Todo lo del plan Esencial</li>
+            <li>12 posts mensuales</li>
+            <li>7 videos en formato Reel</li>
+            <li>25 copys personalizados</li>
+            <li>7 campañas de interacción en Meta y TikTok Ads</li>
+            <li>Campañas en Google Ads</li>
+            <li>Informe detallado mensual</li>
+          </ul>
+          <div class="plan-price">
+            <div class="price-row"><span class="num">$1,500</span><span class="lbl">/mes + IVA<br>Sin contrato</span></div>
+            <div class="price-row"><span class="num">$1,300</span><span class="lbl">/mes + IVA<br>Contrato 12 meses</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="plan empresarial">
+        <div class="plan-head">
+          <p class="name">Empresarial</p>
+          <p class="desc">Estrategia digital integral: redes + Google My Business + Google Ads.</p>
+        </div>
+        <div class="plan-body">
+          <ul>
+            <li>Todo lo del plan Pro</li>
+            <li>Integración completa con Google My Business + publicaciones mensuales</li>
+            <li>Pixel de Facebook vinculado al sitio web</li>
+            <li>18 posts y 10 videos Reel mensuales (base, sin límite si surge necesidad)</li>
+            <li>Copys y campañas en Meta / TikTok Ads ilimitadas</li>
+            <li>Campaña en Google Ads con investigación de palabras clave</li>
+            <li>Informe avanzado de estadísticas y métricas</li>
+          </ul>
+          <div class="plan-price">
+            <div class="price-row"><span class="num">$2,500</span><span class="lbl">/mes + IVA<br>Sin contrato</span></div>
+            <div class="price-row"><span class="num">$2,000</span><span class="lbl">/mes + IVA<br>Contrato 12 meses</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="upgrade-path">
+      💡 <b>Nuestra recomendación:</b> arrancar con el plan <b>Pro</b> — es el que mejor se ajusta al tamaño y objetivos actuales de Urovida (incluye Google My Business y campañas más robustas). A medida que la marca crezca en seguidores y demanda de pacientes, se puede subir directamente al plan <b>Empresarial</b> sin perder el trabajo ya construido.
+    </div>
+
+    <div class="orange-box">
+      <h4>🟠 Configuración inicial: gratis según el plan</h4>
+      La configuración correcta de redes sociales, la configuración y creación de portafolios comerciales, y la configuración de Ads, <b>son gratis si se contrata a partir del plan Pro por 12 meses o el plan Empresarial por 12 meses</b>. Caso contrario, el cliente asume estos valores adicionales.
+    </div>
+  </section>
+
+  <!-- AHORRO -->
+  <section class="card">
+    <h2><span class="tag"></span>Lo que te ahorras frente a armar un equipo interno</h2>
+    <p class="section-desc">Contratar por separado cada especialidad que ya incluye tu plan Karsan tiene este costo mensual aproximado (distribución de sueldos de un equipo interno):</p>
+    <table>
+      <tr><th>Rol</th><th>Costo mensual aprox.</th></tr>
+      <tr><td>Community Manager</td><td>$900</td></tr>
+      <tr><td>Diseñador Gráfico</td><td>$800</td></tr>
+      <tr><td>Productor Audiovisual</td><td>$1,000</td></tr>
+      <tr><td>Especialista en Publicidad Digital</td><td>$1,200</td></tr>
+      <tr><td>Estratega Digital / Jefe de Marketing</td><td>$1,500</td></tr>
+      <tr><td>Total equipo interno</td><td>$5,400 / mes</td></tr>
+    </table>
+    <p style="font-size:12.5px;color:var(--muted);margin:10px 0 4px;">Con Karsan obtienes ese mismo equipo completo dentro del valor mensual de tu plan — incluyendo al productor audiovisual y todo el equipo de producción (cámaras, iluminación, edición), sin nómina, beneficios sociales ni compra de software especializado.</p>
+
+    <table>
+      <tr><th>Equipo de producción audiovisual <span class="badge-orange">Gasto inicial</span></th><th>Costo aproximado</th></tr>
+      <tr><td>Cámara profesional</td><td>$3,500</td></tr>
+      <tr><td>Luces profesionales</td><td>$500</td></tr>
+      <tr><td>Micrófonos</td><td>$400</td></tr>
+      <tr><td>Otros implementos</td><td>$600</td></tr>
+      <tr><td>Total inversión inicial en equipo</td><td>$5,000</td></tr>
+    </table>
+    <p style="font-size:12px;color:var(--muted);margin-top:8px;">Este es un gasto único de inversión inicial (no mensual) que asumirías si armas el equipo de producción por tu cuenta. Con Karsan, este equipo ya está incluido — no lo compras.</p>
+
+    <div class="benefits-grid">
+      <div class="benefit"><span class="dot2"></span><h4>Costo-Efectividad Karsan Digital</h4><p>Obtienes un equipo profesional completo según el plan elegido, frente a un costo interno de $5,400 USD/mes.</p></div>
+      <div class="benefit"><span class="dot2"></span><h4>Cero Gastos Operativos Adicionales</h4><p>No asumes nómina, beneficios sociales, equipos de producción audiovisual, software especializado ni capacitación de personal.</p></div>
+      <div class="benefit"><span class="dot2"></span><h4>Resultados Medibles</h4><p>Todo el trabajo se entrega con planificación detallada, métricas claras y resultados medibles.</p></div>
+      <div class="benefit"><span class="dot2"></span><h4>Atención Personalizada</h4><p>Atendemos cualquier consulta o requerimiento, asegurando que siempre tengas el soporte que necesitas a la mano.</p></div>
+    </div>
+
+    <table>
+      <tr><th>Plan Karsan</th><th>Costo mensual (contrato 12 meses)</th><th>Ahorro frente al equipo interno ($5,400)</th></tr>
+      <tr><td>Esencial</td><td>$550</td><td>$4,850 / mes</td></tr>
+      <tr><td>Pro <span class="badge-strong">Recomendado</span></td><td>$1,300</td><td>$4,100 / mes</td></tr>
+      <tr><td>Empresarial</td><td>$2,000</td><td>$3,400 / mes</td></tr>
+    </table>
+    <p style="font-size:12px;color:var(--muted);margin-top:8px;">*Ahorro estimado sin considerar el presupuesto de pauta publicitaria, que corre por cuenta del cliente en cualquier escenario (interno o con Karsan).</p>
+  </section>
+
+  <!-- NOTAS -->
+  <section class="card">
+    <h2><span class="tag"></span>Condiciones importantes</h2>
+    <div class="notes-grid">
+      <div class="note"><b>Forma de pago:</b> firma previa del contrato + pago anticipado del 100% del valor del plan. El contenido inicia una vez confirmado el pago. No se trabaja a mes caído.</div>
+      <div class="note"><b>Modalidad:</b> puedes elegir "Sin contrato" para mayor flexibilidad, o "Contrato 12 meses" con tarifa preferencial.</div>
+      <div class="note"><b>Presupuesto de campañas:</b> la inversión publicitaria (pauta) en Meta, TikTok y Google Ads es aparte y corre por cuenta del cliente, con tarjeta vinculada a cada plataforma. No está incluida en el valor mensual del plan.</div>
+      <div class="note"><b>Oferta Mundialista:</b> los precios de esta propuesta son preferenciales y válidos hasta el 31 de julio.</div>
+      <div class="note"><b>Consumo del paquete:</b> el contenido y las campañas no son acumulables; lo no usado en el mes no se traslada al siguiente.</div>
+      <div class="note"><b>Cambios y revisiones:</b> incluye 1 cambio por video o post; ajustes adicionales tienen costo extra.</div>
+      <div class="note"><b>Accesos:</b> para iniciar necesitamos los accesos actuales a Facebook, Instagram, TikTok y Google My Business, y el logo de Urovida en alta calidad.</div>
+      <div class="note"><b>Cierre de ventas:</b> Karsan diseña y ejecuta la estrategia digital; la atención de leads y el cierre de ventas quedan a cargo del equipo de Urovida.</div>
+    </div>
+  </section>
+
+</div>
+
+<div class="wrap">
+  <footer>
+    <div style="display:flex;justify-content:center;align-items:center;gap:20px;margin-bottom:16px;flex-wrap:wrap;">
+      <img src="urovida_full.png" alt="Urovida" style="height:86px;background:#fff;border-radius:10px;padding:8px 16px;">
+      <img src="karsan_logo.png" alt="Karsan Digital" style="height:34px;">
+    </div>
+    <p><a href="mailto:marketing@karsandigital.com">marketing@karsandigital.com</a> &nbsp;·&nbsp; +593 99-737-6776 &nbsp;·&nbsp; <a href="https://www.karsandigital.com" target="_blank" rel="noopener">www.karsandigital.com</a></p>
+    <p>Propuesta 1 de 2 — Manejo de Redes Sociales. Ver también la Propuesta de Rediseño de Sitio Web.</p>
+  </footer>
+</div>
+
+</body>
+</html>
