@@ -1,6 +1,7 @@
 const express = require('express');
 const marcasRoutes = require('./routes/marcasRoutes');
 const serviciosRoutes = require('./routes/serviciosRoutes');
+const clientesRoutes = require('./routes/clientesRoutes');
 require('dotenv').config();
 
 const app = express();
@@ -14,6 +15,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/marcas', marcasRoutes);
 app.use('/api/servicios', serviciosRoutes);
+app.use('/api/clientes', clientesRoutes);
 
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
