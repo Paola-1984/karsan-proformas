@@ -7,11 +7,12 @@ const {
   updateServicio,
   deleteServicio
 } = require('../controllers/serviciosController');
+const { verificarToken, soloAdmin } = require('../middlewares/authMiddleware');
 
 router.get('/', getServicios);
 router.get('/:id', getServicioById);
-router.post('/', createServicio);
-router.put('/:id', updateServicio);
-router.delete('/:id', deleteServicio);
+router.post('/', verificarToken, soloAdmin, createServicio);
+router.put('/:id', verificarToken, soloAdmin, updateServicio);
+router.delete('/:id', verificarToken, soloAdmin, deleteServicio);
 
 module.exports = router;
