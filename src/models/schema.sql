@@ -14,22 +14,37 @@ CREATE TABLE marcas (
     correo_remitente VARCHAR(150) NOT NULL,
     prefijo_correlativo VARCHAR(10) NOT NULL,
     activo BOOLEAN DEFAULT TRUE,
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    telefono VARCHAR(20) NULL,
+    whatsapp VARCHAR(20) NULL,
+    sitio_web VARCHAR(255) NULL,
+    facebook_url VARCHAR(255) NULL,
+    instagram_url VARCHAR(255) NULL,
+    tiktok_url VARCHAR(255) NULL,
+    linkedin_url VARCHAR(255) NULL
 );
 
 -- 2. TABLA DE USUARIOS (Admin y Asesor)
 -- marca_id NULL = Admin con acceso a TODAS las marcas (Karsan corporativo)
 -- marca_id con valor = usuario restringido a esa marca únicamente
-CREATE TABLE usuarios (
+CREATE TABLE marcas (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    marca_id INT NULL,
-    nombre VARCHAR(120) NOT NULL,
-    email VARCHAR(150) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    rol ENUM('ADMIN', 'ASESOR') DEFAULT 'ASESOR',
+    nombre VARCHAR(100) NOT NULL,
+    slug VARCHAR(50) UNIQUE NOT NULL,
+    logo_url VARCHAR(255),
+    color_primario VARCHAR(10) NOT NULL,
+    color_secundario VARCHAR(10) NOT NULL,
+    correo_remitente VARCHAR(150) NOT NULL,
+    prefijo_correlativo VARCHAR(10) NOT NULL,
     activo BOOLEAN DEFAULT TRUE,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (marca_id) REFERENCES marcas(id) ON DELETE SET NULL
+    telefono VARCHAR(20) NULL,
+    whatsapp VARCHAR(20) NULL,
+    sitio_web VARCHAR(255) NULL,
+    facebook_url VARCHAR(255) NULL,
+    instagram_url VARCHAR(255) NULL,
+    tiktok_url VARCHAR(255) NULL,
+    linkedin_url VARCHAR(255) NULL
 );
 
 -- 3. TABLA DE CLIENTES
@@ -48,17 +63,24 @@ CREATE TABLE clientes (
 
 -- 4. TABLA DE CATÁLOGO / SERVICIOS
 -- iva_porcentaje reemplaza el booleano: 0.00 = exento (ej. cursos en el exterior), 15.00 = estándar
-CREATE TABLE servicios_catalogo (
+CREATE TABLE marcas (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    marca_id INT NOT NULL,
-    nombre VARCHAR(150) NOT NULL,
-    descripcion TEXT,
-    precio_base DECIMAL(10,2) NOT NULL,
-    iva_porcentaje DECIMAL(5,2) DEFAULT 15.00,
-    es_editable BOOLEAN DEFAULT FALSE,
+    nombre VARCHAR(100) NOT NULL,
+    slug VARCHAR(50) UNIQUE NOT NULL,
+    logo_url VARCHAR(255),
+    color_primario VARCHAR(10) NOT NULL,
+    color_secundario VARCHAR(10) NOT NULL,
+    correo_remitente VARCHAR(150) NOT NULL,
+    prefijo_correlativo VARCHAR(10) NOT NULL,
     activo BOOLEAN DEFAULT TRUE,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (marca_id) REFERENCES marcas(id)
+    telefono VARCHAR(20) NULL,
+    whatsapp VARCHAR(20) NULL,
+    sitio_web VARCHAR(255) NULL,
+    facebook_url VARCHAR(255) NULL,
+    instagram_url VARCHAR(255) NULL,
+    tiktok_url VARCHAR(255) NULL,
+    linkedin_url VARCHAR(255) NULL
 );
 
 -- 5. TABLA DE PORTAFOLIO / TRABAJOS DESTACADOS (galería visual en la proforma)
@@ -67,7 +89,7 @@ CREATE TABLE portafolio (
     marca_id INT NOT NULL,
     titulo VARCHAR(150),
     descripcion TEXT,
-    imagen_url VARCHAR(255) NOT NULL,
+    iframe_embed TEXT NOT NULL,
     orden INT DEFAULT 0,
     activo BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (marca_id) REFERENCES marcas(id)
