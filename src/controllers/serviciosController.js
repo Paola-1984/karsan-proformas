@@ -1,17 +1,73 @@
 const pool = require('../config/database');
 
-// Listar servicios/cursos, opcionalmente filtrados por marca
+// Valida que la combinación de precios sea coherente con las reglas de negocio
+const validarPrecios = ({ es_editable, precio_unico, precio_plan_anual, precio_plan_trimestral }) => {
+  const tieneUnico = precio_unico !== undefined && precio_unico !== null;
+  const tieneAnual = precio_plan_anual !== undefined && precio_plan_anual !== null;
+  const tieneTrimestral = precio_plan_trimestral !== undefined && precio_plan_trimestral !== null;
+
+  if (!es_editable) {
+    if (!tieneUnico) {
+      return 'Los servicios no editables (catálogo fijo) requieren precio_unico';
+    }
+    if (tieneAnual || tieneTrimestral) {
+      return 'Los servicios no editables no pueden tener precio_plan_anual ni precio_plan_trimestral';
+    }
+    return null;
+  }
+
+  const combinacionPlan = tieneAnual && tieneTrimestral && !tieneUnico;
+  const combinacionUnico = tieneUnico && !tieneAnual && !tieneTrimestral;
+
+  if (!combinacionPlan && !combinacionUnico) {
+    return 'Debe enviar (precio_plan_anual + precio_plan_trimestral) O precio_unico, nunca una combinación distinta ni ambos pares a la vez';
+  }
+  if (tieneAnual && !tieneTrimestral) {
+    return 'Si envía precio_plan_anual también debe enviar precio_plan_trimestral';
+  }
+  if (tieneTrimestral && !tieneAnual) {
+    return 'Si envía precio_plan_trimestral también debe enviar precio_plan_anual';
+  }
+
+  return null;
+};
+
+// Limpia los campos de precio que no correspondan según es_editable,
+// para que el cliente (Thunder Client, frontend futuro) no tenga que
+// enviar null explícito en cada campo irrelevante.
+const normalizarPrecios = ({ es_editable, precio_unico, precio_plan_anual, precio_plan_trimestral }) => {
+  if (!es_editable) {
+    return {
+      precio_unico: precio_unico ?? null,
+      precio_plan_anual: null,
+      precio_plan_trimestral: null
+    };
+  }
+
+  const tieneUnico = precio_unico !== undefined && precio_unico !== null;
+  if (tieneUnico) {
+    return {
+      precio_unico,
+      precio_plan_anual: null,
+      precio_plan_trimestral: null
+    };
+  }
+
+  return {
+    precio_unico: null,
+    precio_plan_anual: precio_plan_anual ?? null,
+    precio_plan_trimestral: precio_plan_trimestral ?? null
+  };
+};
+
 const getServicios = async (req, res) => {
   try {
-    const { marca_id } = req.query; // ej: /api/servicios?marca_id=1
+    const { marca_id, categoria } = req.query;
     let query = 'SELECT * FROM servicios_catalogo WHERE activo = 1';
     const params = [];
-
-    if (marca_id) {
-      query += ' AND marca_id = ?';
-      params.push(marca_id);
-    }
-
+    if (marca_id) { query += ' AND marca_id = ?'; params.push(marca_id); }
+    if (categoria) { query += ' AND categoria = ?'; params.push(categoria); }
+    query += ' ORDER BY categoria, nombre';
     const [rows] = await pool.query(query, params);
     res.json(rows);
   } catch (error) {
@@ -20,14 +76,11 @@ const getServicios = async (req, res) => {
   }
 };
 
-// Obtener un servicio por id
 const getServicioById = async (req, res) => {
   try {
     const { id } = req.params;
     const [rows] = await pool.query('SELECT * FROM servicios_catalogo WHERE id = ?', [id]);
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'Servicio no encontrado' });
-    }
+    if (rows.length === 0) return res.status(404).json({ error: 'Servicio no encontrado' });
     res.json(rows[0]);
   } catch (error) {
     console.error(error);
@@ -35,21 +88,38 @@ const getServicioById = async (req, res) => {
   }
 };
 
-// Crear un nuevo servicio/curso
 const createServicio = async (req, res) => {
   try {
-    const { marca_id, nombre, descripcion, precio_base, iva_porcentaje, es_editable } = req.body;
+    const {
+      marca_id, nombre, descripcion, precio_base, iva_porcentaje, es_editable,
+      precio_plan_anual, precio_plan_trimestral, precio_unico, categoria
+    } = req.body;
 
     if (!marca_id || !nombre || precio_base === undefined) {
       return res.status(400).json({ error: 'marca_id, nombre y precio_base son obligatorios' });
     }
 
-    const [result] = await pool.query(
-      `INSERT INTO servicios_catalogo (marca_id, nombre, descripcion, precio_base, iva_porcentaje, es_editable)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [marca_id, nombre, descripcion || null, precio_base, iva_porcentaje ?? 15.00, es_editable ?? false]
-    );
+    const esEditableFinal = es_editable ?? false;
+    const precios = normalizarPrecios({
+      es_editable: esEditableFinal,
+      precio_unico, precio_plan_anual, precio_plan_trimestral
+    });
 
+    const errorPrecios = validarPrecios({ es_editable: esEditableFinal, ...precios });
+    if (errorPrecios) {
+      return res.status(400).json({ error: errorPrecios });
+    }
+
+    const [result] = await pool.query(
+      `INSERT INTO servicios_catalogo 
+        (marca_id, nombre, descripcion, precio_base, iva_porcentaje, es_editable, 
+         precio_plan_anual, precio_plan_trimestral, precio_unico, categoria) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        marca_id, nombre, descripcion || null, precio_base, iva_porcentaje ?? 15.00, esEditableFinal,
+        precios.precio_plan_anual, precios.precio_plan_trimestral, precios.precio_unico, categoria || null
+      ]
+    );
     res.status(201).json({ id: result.insertId, mensaje: 'Servicio creado correctamente' });
   } catch (error) {
     console.error(error);
@@ -57,19 +127,36 @@ const createServicio = async (req, res) => {
   }
 };
 
-// Editar un servicio existente
 const updateServicio = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, descripcion, precio_base, iva_porcentaje, es_editable } = req.body;
+    const {
+      nombre, descripcion, precio_base, iva_porcentaje, es_editable,
+      precio_plan_anual, precio_plan_trimestral, precio_unico, categoria
+    } = req.body;
+
+    const esEditableFinal = es_editable ?? false;
+    const precios = normalizarPrecios({
+      es_editable: esEditableFinal,
+      precio_unico, precio_plan_anual, precio_plan_trimestral
+    });
+
+    const errorPrecios = validarPrecios({ es_editable: esEditableFinal, ...precios });
+    if (errorPrecios) {
+      return res.status(400).json({ error: errorPrecios });
+    }
 
     await pool.query(
       `UPDATE servicios_catalogo 
-       SET nombre = ?, descripcion = ?, precio_base = ?, iva_porcentaje = ?, es_editable = ?
-       WHERE id = ?`,
-      [nombre, descripcion, precio_base, iva_porcentaje, es_editable, id]
+       SET nombre=?, descripcion=?, precio_base=?, iva_porcentaje=?, es_editable=?, 
+           precio_plan_anual=?, precio_plan_trimestral=?, precio_unico=?, categoria=? 
+       WHERE id=?`,
+      [
+        nombre, descripcion, precio_base, iva_porcentaje, esEditableFinal,
+        precios.precio_plan_anual, precios.precio_plan_trimestral, precios.precio_unico, categoria || null,
+        id
+      ]
     );
-
     res.json({ mensaje: 'Servicio actualizado correctamente' });
   } catch (error) {
     console.error(error);
@@ -77,7 +164,6 @@ const updateServicio = async (req, res) => {
   }
 };
 
-// Desactivar un servicio (no se borra físicamente, para no perder histórico en proformas ya emitidas)
 const deleteServicio = async (req, res) => {
   try {
     const { id } = req.params;

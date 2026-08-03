@@ -27,24 +27,18 @@ CREATE TABLE marcas (
 -- 2. TABLA DE USUARIOS (Admin y Asesor)
 -- marca_id NULL = Admin con acceso a TODAS las marcas (Karsan corporativo)
 -- marca_id con valor = usuario restringido a esa marca únicamente
-CREATE TABLE marcas (
+-- descuento_max_permitido = tope de descuento que puede aplicar ese usuario en proformas
+CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    slug VARCHAR(50) UNIQUE NOT NULL,
-    logo_url VARCHAR(255),
-    color_primario VARCHAR(10) NOT NULL,
-    color_secundario VARCHAR(10) NOT NULL,
-    correo_remitente VARCHAR(150) NOT NULL,
-    prefijo_correlativo VARCHAR(10) NOT NULL,
+    marca_id INT NULL,
+    nombre VARCHAR(120) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    rol ENUM('ADMIN', 'ASESOR') DEFAULT 'ASESOR',
     activo BOOLEAN DEFAULT TRUE,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    telefono VARCHAR(20) NULL,
-    whatsapp VARCHAR(20) NULL,
-    sitio_web VARCHAR(255) NULL,
-    facebook_url VARCHAR(255) NULL,
-    instagram_url VARCHAR(255) NULL,
-    tiktok_url VARCHAR(255) NULL,
-    linkedin_url VARCHAR(255) NULL
+    descuento_max_permitido DECIMAL(5,2) DEFAULT 10.00,
+    FOREIGN KEY (marca_id) REFERENCES marcas(id) ON DELETE SET NULL
 );
 
 -- 3. TABLA DE CLIENTES
@@ -63,24 +57,24 @@ CREATE TABLE clientes (
 
 -- 4. TABLA DE CATÁLOGO / SERVICIOS
 -- iva_porcentaje reemplaza el booleano: 0.00 = exento (ej. cursos en el exterior), 15.00 = estándar
-CREATE TABLE marcas (
+-- precio_plan_anual + precio_plan_trimestral, O precio_unico — nunca los tres a la vez
+-- fecha_inicio_curso = default de vencimiento para proformas de Escuela (sobreescribible por proforma)
+CREATE TABLE servicios_catalogo (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    slug VARCHAR(50) UNIQUE NOT NULL,
-    logo_url VARCHAR(255),
-    color_primario VARCHAR(10) NOT NULL,
-    color_secundario VARCHAR(10) NOT NULL,
-    correo_remitente VARCHAR(150) NOT NULL,
-    prefijo_correlativo VARCHAR(10) NOT NULL,
+    marca_id INT NOT NULL,
+    nombre VARCHAR(150) NOT NULL,
+    descripcion TEXT,
+    precio_base DECIMAL(10,2) NOT NULL,
+    iva_porcentaje DECIMAL(5,2) DEFAULT 15.00,
+    es_editable BOOLEAN DEFAULT FALSE,
     activo BOOLEAN DEFAULT TRUE,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    telefono VARCHAR(20) NULL,
-    whatsapp VARCHAR(20) NULL,
-    sitio_web VARCHAR(255) NULL,
-    facebook_url VARCHAR(255) NULL,
-    instagram_url VARCHAR(255) NULL,
-    tiktok_url VARCHAR(255) NULL,
-    linkedin_url VARCHAR(255) NULL
+    precio_plan_anual DECIMAL(10,2) NULL,
+    precio_plan_trimestral DECIMAL(10,2) NULL,
+    precio_unico DECIMAL(10,2) NULL,
+    categoria VARCHAR(100) NULL,
+    fecha_inicio_curso DATE NULL,
+    FOREIGN KEY (marca_id) REFERENCES marcas(id)
 );
 
 -- 5. TABLA DE PORTAFOLIO / TRABAJOS DESTACADOS (galería visual en la proforma)
@@ -99,9 +93,9 @@ CREATE TABLE portafolio (
 CREATE TABLE proyeccion_parametros (
     id INT AUTO_INCREMENT PRIMARY KEY,
     servicio_id INT NOT NULL,
-    metrica VARCHAR(100) NOT NULL,      -- ej: 'alcance_estimado', 'leads_estimados'
+    metrica VARCHAR(100) NOT NULL,
     valor_estimado DECIMAL(10,2) NOT NULL,
-    unidad VARCHAR(50),                  -- ej: 'personas', 'leads/mes'
+    unidad VARCHAR(50),
     FOREIGN KEY (servicio_id) REFERENCES servicios_catalogo(id) ON DELETE CASCADE
 );
 
