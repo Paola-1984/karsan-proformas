@@ -5,6 +5,7 @@ const clientesRoutes = require('./routes/clientesRoutes');
 const usuariosRoutes = require('./routes/usuariosRoutes');
 const portafolioRoutes = require('./routes/portafolioRoutes');
 const proformasRoutes = require('./routes/proformasRoutes');
+const proformaVistaRoutes = require('./routes/proformaVistaRoutes');
 require('dotenv').config();
 
 const app = express();
@@ -24,6 +25,7 @@ app.use('/api/clientes', clientesRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/portafolio', portafolioRoutes);
 app.use('/api/proformas', proformasRoutes);
+app.use('/proforma', proformaVistaRoutes);
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
