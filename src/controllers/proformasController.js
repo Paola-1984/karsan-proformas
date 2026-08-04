@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const { enviarCorreoProforma } = require('../services/emailService');
 
 // Genera el siguiente número correlativo para una marca (ej: ESC-0007 -> ESC-0008)
 // Usa FOR UPDATE para bloquear la última fila de esa marca y evitar duplicados
@@ -130,7 +131,7 @@ const createProforma = async (req, res) => {
     const marca = marcaRows[0];
 
     // 2. Validar cliente
-    const [clienteRows] = await connection.query('SELECT id FROM clientes WHERE id = ?', [cliente_id]);
+    const [clienteRows] = await connection.query('SELECT * FROM clientes WHERE id = ?', [cliente_id]);
     if (clienteRows.length === 0) {
       await connection.rollback();
       connection.release();
@@ -259,11 +260,30 @@ const createProforma = async (req, res) => {
     await connection.commit();
     connection.release();
 
+    // Envío automático de correo (no bloquea la respuesta si falla)
+    let correoResultado = { exito: false, error: 'No se intentó enviar' };
+    try {
+      correoResultado = await enviarCorreoProforma({
+        marca,
+        cliente: clienteRows[0],
+        proforma: {
+          numero_correlativo: numeroCorrelativo,
+          total: totalGeneral
+        }
+      });
+    } catch (errorCorreo) {
+      console.error('Error al enviar correo de proforma:', errorCorreo);
+      correoResultado = { exito: false, error: errorCorreo.message };
+    }
+
     res.status(201).json({
       id: proformaId,
       numero_correlativo: numeroCorrelativo,
-      mensaje: 'Proforma creada correctamente'
+      mensaje: 'Proforma creada correctamente',
+      correo_enviado: correoResultado.exito,
+      correo_error: correoResultado.exito ? undefined : correoResultado.error
     });
+
   } catch (error) {
     await connection.rollback();
     connection.release();
