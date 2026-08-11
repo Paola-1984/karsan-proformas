@@ -115,6 +115,9 @@ const renderBotonesAccion = (numeroCorrelativo, estado) => {
 };
 
 const construirHtmlProforma = (proforma, lineas, marca, cliente, portafolio) => {
+  const tasasIva = [...new Set(lineas.map(l => Number(l.iva_porcentaje)))];
+  const ivaLabel = tasasIva.length === 1 ? ` (${tasasIva[0]}%)` : '';
+
   return `
 <!DOCTYPE html>
 <html lang="es">
@@ -214,7 +217,7 @@ const construirHtmlProforma = (proforma, lineas, marca, cliente, portafolio) => 
     <div class="totales">
       <div><span>Subtotal</span><span>${formatMoney(proforma.subtotal)}</span></div>
       ${Number(proforma.descuento_general) > 0 ? `<div><span>Descuento general</span><span>-${formatMoney(proforma.descuento_general)}</span></div>` : ''}
-      <div><span>IVA</span><span>${formatMoney(proforma.monto_iva)}</span></div>
+      <div><span>IVA${ivaLabel}</span><span>${formatMoney(proforma.monto_iva)}</span></div>
       <div class="total-final"><span>Total</span><span>${formatMoney(proforma.total)}</span></div>
     </div>
 
