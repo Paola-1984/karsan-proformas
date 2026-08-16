@@ -1,27 +1,53 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-// Verifica que el usuario haya iniciado sesión (token válido)
-const verificarToken = (req, res, next) => {
+// Extrae el token ya sea del header Authorization (API) o de la cookie 'token' (panel admin)
+const extraerToken = (req) => {
   const authHeader = req.headers['authorization'];
+  if (authHeader) {
+    return authHeader.split(' ')[1];
+  }
+  if (req.cookies && req.cookies.token) {
+    return req.cookies.token;
+  }
+  return null;
+};
 
-  if (!authHeader) {
+// Verifica sesión para rutas de API — responde con JSON si falla
+const verificarToken = (req, res, next) => {
+  const token = extraerToken(req);
+
+  if (!token) {
     return res.status(401).json({ error: 'No se proporcionó token de acceso' });
   }
 
-  // El header viene como "Bearer <token>", separamos y tomamos solo el token
-  const token = authHeader.split(' ')[1];
-
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.usuario = decoded; // guardamos los datos del usuario para usarlos después
-    next(); // deja continuar hacia el controller
+    req.usuario = decoded;
+    next();
   } catch (error) {
     return res.status(401).json({ error: 'Token inválido o expirado' });
   }
 };
 
-// Verifica que el usuario tenga rol de Admin
+// Verifica sesión para el panel admin — redirige al login si falla
+const verificarTokenPanel = (req, res, next) => {
+  const token = extraerToken(req);
+
+  if (!token) {
+    return res.redirect('/admin/login');
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.usuario = decoded;
+    next();
+  } catch (error) {
+    return res.redirect('/admin/login');
+  }
+};
+
+// Verifica que el usuario tenga rol de Admin (se usa igual en ambos contextos)
 const soloAdmin = (req, res, next) => {
   if (req.usuario.rol !== 'ADMIN') {
     return res.status(403).json({ error: 'No tienes permisos para realizar esta acción' });
@@ -29,4 +55,4 @@ const soloAdmin = (req, res, next) => {
   next();
 };
 
-module.exports = { verificarToken, soloAdmin };
+module.exports = { verificarToken, verificarTokenPanel, soloAdmin };

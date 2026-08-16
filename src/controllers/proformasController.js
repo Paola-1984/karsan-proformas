@@ -339,4 +339,20 @@ const updateEstadoProforma = async (req, res) => {
   }
 };
 
-module.exports = { createProforma, getProformas, getProformaById, updateEstadoProforma };
+// Para el panel admin: trae proformas con nombre de marca y cliente ya resueltos (JOIN)
+const getProformasParaPanel = async () => {
+  const [rows] = await pool.query(`
+    SELECT
+      p.id, p.numero_correlativo, p.fecha_emision, p.fecha_vencimiento,
+      p.total, p.estado,
+      m.nombre AS marca_nombre,
+      c.nombre_razon_social AS cliente_nombre
+    FROM proformas p
+    JOIN marcas m ON p.marca_id = m.id
+    JOIN clientes c ON p.cliente_id = c.id
+    ORDER BY p.creado_en DESC
+  `);
+  return rows;
+};
+
+module.exports = { createProforma, getProformas, getProformaById, updateEstadoProforma, getProformasParaPanel };

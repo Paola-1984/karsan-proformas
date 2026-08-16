@@ -1,0 +1,38 @@
+<%- include('partials/layout-top', { usuario, activo: 'proformas' }) %>
+
+  <h1>Proformas</h1>
+
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>N° Correlativo</th>
+        <th>Marca</th>
+        <th>Cliente</th>
+        <th>Fecha emisión</th>
+        <th>Fecha vencimiento</th>
+        <th>Total</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% proformas.forEach(function(p) { %>
+        <tr>
+          <td><%= p.numero_correlativo %></td>
+          <td><%= p.marca_nombre %></td>
+          <td><%= p.cliente_nombre %></td>
+          <td><%= p.fecha_emision.toISOString().split('T')[0] %></td>
+          <td><%= p.fecha_vencimiento.toISOString().split('T')[0] %></td>
+          <td>$<%= Number(p.total).toFixed(2) %></td>
+          <td><span class="badge badge-<%= p.estado.toLowerCase() %>"><%= p.estado %></span></td>
+        </tr>
+      <% }); %>
+
+      <% if (proformas.length === 0) { %>
+        <tr>
+          <td colspan="7" style="text-align:center; color:#888;">No hay proformas registradas todavía.</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+
+<%- include('partials/layout-bottom') %>

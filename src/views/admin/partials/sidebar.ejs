@@ -1,0 +1,8 @@
+<nav class="admin-sidebar">
+  <a href="/admin/proformas" class="<%= activo === 'proformas' ? 'active' : '' %>">Proformas</a>
+  <a href="/admin/clientes" class="<%= activo === 'clientes' ? 'active' : '' %>">Clientes</a>
+  <% if (usuario.rol === 'ADMIN') { %>
+    <a href="/admin/servicios" class="<%= activo === 'servicios' ? 'active' : '' %>">Catálogo de servicios</a>
+    <a href="/admin/portafolio" class="<%= activo === 'portafolio' ? 'active' : '' %>">Portafolio</a>
+  <% } %>
+</nav>

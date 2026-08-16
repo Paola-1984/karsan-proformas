@@ -34,7 +34,33 @@ const createUsuario = async (req, res) => {
   }
 };
 
-// Login: valida email + password, devuelve un token si es correcto
+// Valida email + password contra la BD. Devuelve el usuario si es correcto, o null si no.
+// Compartida entre el login de API y el login del panel admin.
+const validarCredenciales = async (email, password) => {
+  const [rows] = await pool.query('SELECT * FROM usuarios WHERE email = ? AND activo = 1', [email]);
+  if (rows.length === 0) {
+    return null;
+  }
+
+  const usuario = rows[0];
+  const passwordValida = await bcrypt.compare(password, usuario.password_hash);
+  if (!passwordValida) {
+    return null;
+  }
+
+  return usuario;
+};
+
+// Genera el JWT a partir de un usuario ya validado
+const generarToken = (usuario) => {
+  return jwt.sign(
+    { id: usuario.id, nombre: usuario.nombre, rol: usuario.rol, marca_id: usuario.marca_id },
+    process.env.JWT_SECRET,
+    { expiresIn: '8h' }
+  );
+};
+
+// Login de API: valida email + password, devuelve el token en el body (JSON)
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -43,22 +69,12 @@ const login = async (req, res) => {
       return res.status(400).json({ error: 'email y password son obligatorios' });
     }
 
-    const [rows] = await pool.query('SELECT * FROM usuarios WHERE email = ? AND activo = 1', [email]);
-    if (rows.length === 0) {
+    const usuario = await validarCredenciales(email, password);
+    if (!usuario) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
-    const usuario = rows[0];
-    const passwordValida = await bcrypt.compare(password, usuario.password_hash);
-    if (!passwordValida) {
-      return res.status(401).json({ error: 'Credenciales inválidas' });
-    }
-
-    const token = jwt.sign(
-      { id: usuario.id, nombre: usuario.nombre, rol: usuario.rol, marca_id: usuario.marca_id },
-      process.env.JWT_SECRET,
-      { expiresIn: '8h' }
-    );
+    const token = generarToken(usuario);
 
     res.json({
       mensaje: 'Login exitoso',
@@ -68,6 +84,36 @@ const login = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al iniciar sesión' });
+  }
+};
+
+// Login del panel admin: valida email + password, setea el token como cookie httpOnly y redirige
+const loginPanel = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.render('admin/login', { error: 'Email y contraseña son obligatorios' });
+    }
+
+    const usuario = await validarCredenciales(email, password);
+    if (!usuario) {
+      return res.render('admin/login', { error: 'Credenciales inválidas' });
+    }
+
+    const token = generarToken(usuario);
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 8 * 60 * 60 * 1000 // 8 horas, igual que la expiración del JWT
+    });
+
+    res.redirect('/admin/proformas');
+  } catch (error) {
+    console.error(error);
+    res.render('admin/login', { error: 'Error al iniciar sesión, intenta de nuevo' });
   }
 };
 
@@ -84,4 +130,4 @@ const getUsuarios = async (req, res) => {
   }
 };
 
-module.exports = { createUsuario, login, getUsuarios };
+module.exports = { createUsuario, login, loginPanel, getUsuarios };

@@ -1,0 +1,9 @@
+<header class="admin-header">
+  <div class="admin-header-brand">Karsan Proformas — Panel Admin</div>
+  <div class="admin-header-user">
+    <span>Hola, <strong><%= usuario.nombre %></strong> (<%= usuario.rol %>)</span>
+    <form method="POST" action="/admin/logout" style="display:inline;">
+      <button type="submit" class="logout-btn">Cerrar sesión</button>
+    </form>
+  </div>
+</header>
