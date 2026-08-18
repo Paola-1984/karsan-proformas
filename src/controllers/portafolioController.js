@@ -78,4 +78,24 @@ const deletePortafolio = async (req, res) => {
   }
 };
 
-module.exports = { getPortafolioPorMarca, getPortafolioById, createPortafolio, updatePortafolio, deletePortafolio };
+// Para el panel admin: trae todos los elementos de portafolio activos con nombre de marca resuelto
+const getPortafolioParaPanel = async () => {
+  const [rows] = await pool.query(`
+    SELECT
+      p.id, p.marca_id, p.titulo, p.descripcion, p.iframe_embed, p.orden,
+      m.nombre AS marca_nombre
+    FROM portafolio p
+    JOIN marcas m ON p.marca_id = m.id
+    WHERE p.activo = 1
+    ORDER BY m.nombre, p.orden ASC, p.id ASC
+  `);
+  return rows;
+};
+
+// Para el panel admin: trae un elemento de portafolio por id como dato puro
+const getPortafolioByIdParaPanel = async (id) => {
+  const [rows] = await pool.query('SELECT * FROM portafolio WHERE id = ?', [id]);
+  return rows.length > 0 ? rows[0] : null;
+};
+
+module.exports = { getPortafolioPorMarca, getPortafolioById, createPortafolio, updatePortafolio, deletePortafolio, getPortafolioParaPanel, getPortafolioByIdParaPanel };

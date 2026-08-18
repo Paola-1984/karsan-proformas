@@ -87,4 +87,16 @@ const updateCliente = async (req, res) => {
   }
 };
 
-module.exports = { getClientes, getClienteById, getClienteByIdentificacion, createCliente, updateCliente };
+// Para el panel admin: trae todos los clientes como datos puros (sin req/res)
+const getClientesParaPanel = async () => {
+  const [rows] = await pool.query('SELECT * FROM clientes ORDER BY creado_en DESC');
+  return rows;
+};
+
+// Para el panel admin: trae un cliente por id como dato puro
+const getClienteParaPanel = async (id) => {
+  const [rows] = await pool.query('SELECT * FROM clientes WHERE id = ?', [id]);
+  return rows.length > 0 ? rows[0] : null;
+};
+
+module.exports = { getClientes, getClienteById, getClienteByIdentificacion, createCliente, updateCliente, getClientesParaPanel, getClienteParaPanel };

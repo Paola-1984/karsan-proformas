@@ -27,16 +27,16 @@ const updateMarca = async (req, res) => {
     const { id } = req.params;
     const {
       nombre, logo_url, color_primario, color_secundario, correo_remitente,
-      telefono, whatsapp, sitio_web, facebook_url, instagram_url, tiktok_url, linkedin_url
+      telefono, whatsapp, sitio_web, direccion, facebook_url, instagram_url, tiktok_url, linkedin_url
     } = req.body;
     await pool.query(
       `UPDATE marcas SET 
         nombre=?, logo_url=?, color_primario=?, color_secundario=?, correo_remitente=?,
-        telefono=?, whatsapp=?, sitio_web=?, facebook_url=?, instagram_url=?, tiktok_url=?, linkedin_url=?
+        telefono=?, whatsapp=?, sitio_web=?, direccion=?, facebook_url=?, instagram_url=?, tiktok_url=?, linkedin_url=?
        WHERE id=?`,
       [
         nombre, logo_url, color_primario, color_secundario, correo_remitente,
-        telefono || null, whatsapp || null, sitio_web || null,
+        telefono || null, whatsapp || null, sitio_web || null, direccion || null,
         facebook_url || null, instagram_url || null, tiktok_url || null, linkedin_url || null,
         id
       ]

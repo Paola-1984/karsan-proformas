@@ -1,0 +1,45 @@
+<%- include('partials/layout-top', { usuario, activo: 'clientes' }) %>
+
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h1>Clientes</h1>
+    <a href="/admin/clientes/nuevo" class="btn-primary">+ Nuevo cliente</a>
+  </div>
+
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Nombre / Razón social</th>
+        <th>Identificación</th>
+        <th>Email</th>
+        <th>Teléfono</th>
+        <th>Ciudad</th>
+        <th>Tipo</th>
+        <th>Sector</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% clientes.forEach(function(c) { %>
+        <tr>
+          <td><%= c.nombre_razon_social %></td>
+          <td><%= c.identificacion %></td>
+          <td><%= c.email %></td>
+          <td><%= c.telefono || '—' %></td>
+          <td><%= c.ciudad || '—' %></td>
+          <td><%= c.tipo_cliente %></td>
+          <td><%= c.sector || '—' %></td>
+          <td>
+            <a href="/admin/clientes/<%= c.id %>/editar">Editar</a>
+          </td>
+        </tr>
+      <% }); %>
+
+      <% if (clientes.length === 0) { %>
+        <tr>
+          <td colspan="8" style="text-align:center; color:#888;">No hay clientes registrados todavía.</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+
+<%- include('partials/layout-bottom') %>

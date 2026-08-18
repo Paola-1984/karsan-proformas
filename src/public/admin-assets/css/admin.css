@@ -198,3 +198,16 @@ body {
 .admin-form button[type="submit"]:hover {
   background-color: #1a252f;
 }
+/* Vista previa de portafolio en la tabla del panel */
+.portafolio-preview {
+  width: 160px;
+  max-height: 90px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  position: relative;
+}
+
+.portafolio-preview div {
+  margin: 0 !important;
+}

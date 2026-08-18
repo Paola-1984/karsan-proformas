@@ -1,0 +1,49 @@
+<%- include('partials/layout-top', { usuario, activo: 'portafolio' }) %>
+
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h1>Portafolio</h1>
+    <a href="/admin/portafolio/nuevo" class="btn-primary">+ Nuevo elemento</a>
+  </div>
+
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Marca</th>
+        <th>Título</th>
+        <th>Descripción</th>
+        <th>Orden</th>
+        <th>Vista previa</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% items.forEach(function(p) { %>
+        <tr>
+          <td><%= p.marca_nombre %></td>
+          <td><%= p.titulo || '—' %></td>
+          <td><%= p.descripcion || '—' %></td>
+          <td><%= p.orden %></td>
+          <td>
+            <div class="portafolio-preview">
+              <%- p.iframe_embed %>
+            </div>
+          </td>
+          <td>
+            <a href="/admin/portafolio/<%= p.id %>/editar">Editar</a>
+            &nbsp;|&nbsp;
+            <form method="POST" action="/admin/portafolio/<%= p.id %>/eliminar" style="display:inline;" onsubmit="return confirm('¿Desactivar este elemento del portafolio?');">
+              <button type="submit" class="link-danger">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+
+      <% if (items.length === 0) { %>
+        <tr>
+          <td colspan="6" style="text-align:center; color:#888;">No hay elementos de portafolio registrados todavía.</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+
+<%- include('partials/layout-bottom') %>

@@ -1,0 +1,38 @@
+<%- include('partials/layout-top', { usuario, activo: 'clientes' }) %>
+
+  <h1><%= cliente ? 'Editar cliente' : 'Nuevo cliente' %></h1>
+
+  <form class="admin-form" method="POST" action="<%= cliente ? '/admin/clientes/' + cliente.id + '/editar' : '/admin/clientes/nuevo' %>">
+
+    <label for="nombre_razon_social">Nombre / Razón social</label>
+    <input type="text" id="nombre_razon_social" name="nombre_razon_social" value="<%= cliente ? cliente.nombre_razon_social : '' %>" required>
+
+    <label for="identificacion">Identificación (cédula / RUC)</label>
+    <input type="text" id="identificacion" name="identificacion" value="<%= cliente ? cliente.identificacion : '' %>" required <%= cliente ? 'readonly' : '' %>>
+    <% if (cliente) { %>
+      <p style="font-size:12px; color:#888; margin-top:-12px;">La identificación no se puede editar una vez creado el cliente.</p>
+    <% } %>
+
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" value="<%= cliente ? cliente.email : '' %>" required>
+
+    <label for="telefono">Teléfono</label>
+    <input type="text" id="telefono" name="telefono" value="<%= cliente ? (cliente.telefono || '') : '' %>">
+
+    <label for="ciudad">Ciudad</label>
+    <input type="text" id="ciudad" name="ciudad" value="<%= cliente ? (cliente.ciudad || '') : '' %>">
+
+    <label for="tipo_cliente">Tipo de cliente</label>
+        <select id="tipo_cliente" name="tipo_cliente">
+      <option value="NATURAL" <%= cliente && cliente.tipo_cliente === 'NATURAL' ? 'selected' : '' %>>Natural</option>
+      <option value="EMPRESA" <%= cliente && cliente.tipo_cliente === 'EMPRESA' ? 'selected' : '' %>>Empresa</option>
+    </select>
+
+    <label for="sector">Sector</label>
+    <input type="text" id="sector" name="sector" value="<%= cliente ? (cliente.sector || '') : '' %>">
+
+    <button type="submit"><%= cliente ? 'Guardar cambios' : 'Crear cliente' %></button>
+    <a href="/admin/clientes" style="margin-left:12px;">Cancelar</a>
+  </form>
+
+<%- include('partials/layout-bottom') %>
