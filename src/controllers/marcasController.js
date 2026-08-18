@@ -48,4 +48,10 @@ const updateMarca = async (req, res) => {
   }
 };
 
-module.exports = { getMarcas, getMarcaById, updateMarca };
+// Para el panel admin: trae las marcas activas como datos puros (sin req/res)
+const getMarcasParaPanel = async () => {
+  const [rows] = await pool.query('SELECT * FROM marcas WHERE activo = 1');
+  return rows;
+};
+
+module.exports = { getMarcas, getMarcaById, updateMarca, getMarcasParaPanel };

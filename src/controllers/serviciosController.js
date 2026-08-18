@@ -175,4 +175,24 @@ const deleteServicio = async (req, res) => {
   }
 };
 
-module.exports = { getServicios, getServicioById, createServicio, updateServicio, deleteServicio };
+// Para el panel admin: trae servicios con nombre de marca resuelto (JOIN)
+const getServiciosParaPanel = async () => {
+  const [rows] = await pool.query(`
+    SELECT
+      s.id, s.nombre, s.descripcion, s.precio_base, s.iva_porcentaje, s.es_editable,
+      s.precio_plan_anual, s.precio_plan_trimestral, s.precio_unico, s.categoria,
+      m.nombre AS marca_nombre, m.id AS marca_id
+    FROM servicios_catalogo s
+    JOIN marcas m ON s.marca_id = m.id
+    WHERE s.activo = 1
+    ORDER BY m.nombre, s.categoria, s.nombre
+  `);
+  return rows;
+};
+
+// Para el panel admin: trae un servicio por id como dato puro (sin req/res)
+const getServicioParaPanel = async (id) => {
+  const [rows] = await pool.query('SELECT * FROM servicios_catalogo WHERE id = ?', [id]);
+  return rows.length > 0 ? rows[0] : null;
+};
+module.exports = { getServicios, getServicioById, createServicio, updateServicio, deleteServicio, getServiciosParaPanel, getServicioParaPanel };

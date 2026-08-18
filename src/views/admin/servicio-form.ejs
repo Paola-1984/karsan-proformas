@@ -1,0 +1,68 @@
+<%- include('partials/layout-top', { usuario, activo: 'servicios' }) %>
+
+  <h1><%= servicio ? 'Editar servicio' : 'Nuevo servicio' %></h1>
+
+  <form class="admin-form" method="POST" action="<%= servicio ? '/admin/servicios/' + servicio.id + '/editar' : '/admin/servicios/nuevo' %>">
+
+    <label for="marca_id">Marca</label>
+    <select id="marca_id" name="marca_id" required>
+      <% marcas.forEach(function(m) { %>
+        <option value="<%= m.id %>" <%= servicio && servicio.marca_id === m.id ? 'selected' : '' %>>
+          <%= m.nombre %>
+        </option>
+      <% }); %>
+    </select>
+
+    <label for="categoria">Categoría</label>
+    <input type="text" id="categoria" name="categoria" value="<%= servicio ? (servicio.categoria || '') : '' %>">
+
+    <label for="nombre">Nombre del servicio</label>
+    <input type="text" id="nombre" name="nombre" value="<%= servicio ? servicio.nombre : '' %>" required>
+
+    <label for="descripcion">Descripción</label>
+    <textarea id="descripcion" name="descripcion" rows="3"><%= servicio ? (servicio.descripcion || '') : '' %></textarea>
+
+    <label for="precio_base">Precio base (referencial)</label>
+    <input type="number" step="0.01" id="precio_base" name="precio_base" value="<%= servicio ? servicio.precio_base : '0.00' %>" required>
+
+    <label for="iva_porcentaje">IVA (%)</label>
+    <input type="number" step="0.01" id="iva_porcentaje" name="iva_porcentaje" value="<%= servicio ? servicio.iva_porcentaje : '15.00' %>" required>
+
+    <label>
+      <input type="checkbox" id="es_editable" name="es_editable" value="true"
+        <%= servicio && servicio.es_editable ? 'checked' : '' %>
+        onchange="togglePrecios()" style="width:auto; display:inline-block; margin-right:8px;">
+      ¿Es editable? (BACH = sí, catálogo por planes / Escuela = no, precio fijo)
+    </label>
+
+    <div id="campo-precio-unico" class="campo-condicional">
+      <label for="precio_unico">Precio único</label>
+      <input type="number" step="0.01" id="precio_unico" name="precio_unico"
+        value="<%= servicio && servicio.precio_unico !== null ? servicio.precio_unico : '' %>">
+    </div>
+
+    <div id="campo-precio-planes" class="campo-condicional">
+      <label for="precio_plan_anual">Precio plan anual</label>
+      <input type="number" step="0.01" id="precio_plan_anual" name="precio_plan_anual"
+        value="<%= servicio && servicio.precio_plan_anual !== null ? servicio.precio_plan_anual : '' %>">
+
+      <label for="precio_plan_trimestral">Precio plan trimestral</label>
+      <input type="number" step="0.01" id="precio_plan_trimestral" name="precio_plan_trimestral"
+        value="<%= servicio && servicio.precio_plan_trimestral !== null ? servicio.precio_plan_trimestral : '' %>">
+    </div>
+
+    <button type="submit"><%= servicio ? 'Guardar cambios' : 'Crear servicio' %></button>
+    <a href="/admin/servicios" style="margin-left:12px;">Cancelar</a>
+  </form>
+
+  <script>
+    function togglePrecios() {
+      const esEditable = document.getElementById('es_editable').checked;
+      document.getElementById('campo-precio-unico').classList.toggle('visible', !esEditable);
+      document.getElementById('campo-precio-planes').classList.toggle('visible', esEditable);
+    }
+    // Ejecutar al cargar la página, para reflejar el estado correcto si es edición
+    togglePrecios();
+  </script>
+
+<%- include('partials/layout-bottom') %>

@@ -1,0 +1,54 @@
+<%- include('partials/layout-top', { usuario, activo: 'servicios' }) %>
+
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <h1>Catálogo de servicios</h1>
+    <a href="/admin/servicios/nuevo" class="btn-primary">+ Nuevo servicio</a>
+  </div>
+
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Marca</th>
+        <th>Categoría</th>
+        <th>Nombre</th>
+        <th>Tipo</th>
+        <th>Precio(s)</th>
+        <th>IVA</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% servicios.forEach(function(s) { %>
+        <tr>
+          <td><%= s.marca_nombre %></td>
+          <td><%= s.categoria || '—' %></td>
+          <td><%= s.nombre %></td>
+          <td><%= s.es_editable ? 'Editable' : 'Fijo' %></td>
+          <td>
+            <% if (s.es_editable) { %>
+              Anual: $<%= Number(s.precio_plan_anual).toFixed(2) %><br>
+              Trimestral: $<%= Number(s.precio_plan_trimestral).toFixed(2) %>
+            <% } else { %>
+              $<%= Number(s.precio_unico).toFixed(2) %>
+            <% } %>
+          </td>
+          <td><%= s.iva_porcentaje %>%</td>
+          <td>
+            <a href="/admin/servicios/<%= s.id %>/editar">Editar</a>
+            &nbsp;|&nbsp;
+            <form method="POST" action="/admin/servicios/<%= s.id %>/eliminar" style="display:inline;" onsubmit="return confirm('¿Desactivar este servicio?');">
+              <button type="submit" class="link-danger">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+
+      <% if (servicios.length === 0) { %>
+        <tr>
+          <td colspan="7" style="text-align:center; color:#888;">No hay servicios registrados todavía.</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+
+<%- include('partials/layout-bottom') %>
