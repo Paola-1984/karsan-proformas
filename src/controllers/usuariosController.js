@@ -130,4 +130,10 @@ const getUsuarios = async (req, res) => {
   }
 };
 
-module.exports = { createUsuario, login, loginPanel, getUsuarios };
+// Para el panel admin: trae el descuento máximo actual del usuario desde la BD (no confía en el JWT)
+const getDescuentoMaxUsuario = async (usuarioId) => {
+  const [rows] = await pool.query('SELECT descuento_max_permitido FROM usuarios WHERE id = ?', [usuarioId]);
+  return rows.length > 0 ? Number(rows[0].descuento_max_permitido ?? 10.00) : 10.00;
+};
+
+module.exports = { createUsuario, login, loginPanel, getUsuarios, getDescuentoMaxUsuario };

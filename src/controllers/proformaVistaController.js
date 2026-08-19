@@ -137,7 +137,7 @@ const construirHtmlProforma = (proforma, lineas, marca, cliente, portafolio) => 
   header img { max-height: 60px; }
   .numero-proforma { text-align: right; }
   .numero-proforma .numero { font-size: 1.4em; font-weight: bold; }
-  .badge-estado { display: inline-block; padding: 4px 12px; border-radius: 12px; background: var(--color-secundario); color: #000; font-size: 0.85em; font-weight: bold; margin-top: 5px; }
+    .badge-estado { display: inline-block; padding: 4px 12px; border-radius: 12px; background: var(--color-secundario); color: #fff; font-size: 0.85em; font-weight: bold; margin-top: 5px; }
   main { padding: 30px; }
   .datos-cliente { display: flex; justify-content: space-between; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
   .datos-cliente div { flex: 1; min-width: 200px; }

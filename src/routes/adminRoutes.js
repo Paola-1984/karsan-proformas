@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { loginPanel } = require('../controllers/usuariosController');
+const { loginPanel, getDescuentoMaxUsuario } = require('../controllers/usuariosController');
 const { getProformasParaPanel } = require('../controllers/proformasController');
 const {
   getServiciosParaPanel, getServicioParaPanel, createServicio, updateServicio, deleteServicio
@@ -47,11 +47,34 @@ router.post('/logout', (req, res) => {
 // Listado de proformas (ADMIN y ASESOR)
 router.get('/proformas', verificarTokenPanel, async (req, res) => {
   try {
-    const proformas = await getProformasParaPanel();
+    const proformas = await getProformasParaPanel(req.usuario.marca_id);
     res.render('admin/proformas', { usuario: req.usuario, proformas });
   } catch (error) {
     console.error(error);
     res.status(500).send('Error al cargar las proformas');
+  }
+});
+
+// Formulario de nueva proforma (ADMIN y ASESOR)
+router.get('/proformas/nueva', verificarTokenPanel, async (req, res) => {
+  try {
+    const marcas = await getMarcasParaPanel();
+    const clientes = await getClientesParaPanel();
+    const descuentoMaxUsuario = await getDescuentoMaxUsuario(req.usuario.id);
+    const marcaFija = (req.usuario.marca_id !== null && req.usuario.marca_id !== undefined)
+      ? Number(req.usuario.marca_id)
+      : null;
+
+    res.render('admin/proforma-form', {
+      usuario: req.usuario,
+      marcas,
+      clientes,
+      descuentoMaxUsuario,
+      marcaFija
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error al cargar el formulario de proforma');
   }
 });
 

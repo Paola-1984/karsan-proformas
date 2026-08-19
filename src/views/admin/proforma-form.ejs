@@ -1,0 +1,349 @@
+<%- include('partials/layout-top', { usuario, activo: 'proformas' }) %>
+
+  <h1>Nueva proforma</h1>
+
+  <div id="mensaje-error" class="admin-form" style="display:none; border-left: 4px solid #e74c3c; margin-bottom:16px;"></div>
+
+  <form id="form-proforma" class="admin-form" style="max-width:800px;">
+
+    <label for="marca_id">Marca</label>
+    <select id="marca_id" name="marca_id" required <%= marcaFija ? 'disabled' : '' %>>
+      <% marcas.forEach(function(m) { %>
+        <option value="<%= m.id %>" <%= marcaFija && marcaFija === m.id ? 'selected' : '' %>>
+          <%= m.nombre %>
+        </option>
+      <% }); %>
+    </select>
+    <% if (marcaFija) { %>
+      <input type="hidden" name="marca_id" value="<%= marcaFija %>">
+    <% } %>
+
+    <label for="cliente_id">Cliente</label>
+    <select id="cliente_id" name="cliente_id" required>
+      <option value="">-- Selecciona un cliente --</option>
+      <% clientes.forEach(function(c) { %>
+        <option value="<%= c.id %>"><%= c.nombre_razon_social %> (<%= c.identificacion %>)</option>
+      <% }); %>
+    </select>
+    <p style="font-size:12px; color:#888; margin-top:-12px;">
+      ¿No está tu cliente? <a href="/admin/clientes/nuevo" target="_blank">Créalo aquí</a> y regresa a actualizar esta lista.
+    </p>
+
+    <label for="fecha_inicio_curso">Fecha de inicio de curso (solo Escuela, opcional)</label>
+    <input type="date" id="fecha_inicio_curso" name="fecha_inicio_curso">
+
+    <label for="condiciones_pago">Condiciones de pago</label>
+    <textarea id="condiciones_pago" name="condiciones_pago" rows="2"></textarea>
+
+    <label for="descuento_general_porcentaje">Descuento general (%)</label>
+    <input type="number" id="descuento_general_porcentaje" name="descuento_general_porcentaje" step="0.01" min="0" value="0">
+    <p style="font-size:12px; color:#888; margin-top:-12px;">Tu descuento máximo permitido: <strong><%= descuentoMaxUsuario %>%</strong></p>
+
+    <hr style="margin: 24px 0;">
+
+    <h3>Líneas de servicio</h3>
+    <div id="lineas-container"></div>
+    <button type="button" id="btn-agregar-linea" class="btn-primary" style="margin-top:8px;">+ Agregar línea</button>
+
+    <hr style="margin: 24px 0;">
+
+    <div id="resumen-totales" style="text-align:right; font-size:15px; margin-bottom:16px;">
+      <div>Subtotal: $<span id="resumen-subtotal">0.00</span></div>
+      <div>Descuento: -$<span id="resumen-descuento">0.00</span></div>
+      <div>IVA: $<span id="resumen-iva">0.00</span></div>
+      <div style="font-weight:bold; font-size:18px;">Total: $<span id="resumen-total">0.00</span></div>
+    </div>
+
+    <button type="submit" id="btn-guardar">Crear proforma</button>
+    <a href="/admin/proformas" style="margin-left:12px;">Cancelar</a>
+  </form>
+
+  <!-- Plantilla de una línea (oculta, se clona con JS) -->
+  <template id="plantilla-linea">
+    <div class="linea-servicio" style="border:1px solid #ddd; border-radius:6px; padding:16px; margin-bottom:12px; position:relative;">
+      <button type="button" class="btn-quitar-linea" style="position:absolute; top:8px; right:8px; background:none; border:none; color:#e74c3c; cursor:pointer;">✕ Quitar</button>
+
+      <label>Servicio del catálogo (o deja en blanco para línea personalizada)</label>
+      <select class="linea-servicio-id">
+        <option value="">-- Línea personalizada --</option>
+      </select>
+
+      <div class="linea-personalizada" style="display:none;">
+        <label>Descripción</label>
+        <input type="text" class="linea-descripcion">
+      </div>
+
+      <div class="linea-tipo-precio" style="display:none;">
+        <label>Tipo de precio</label>
+        <select class="linea-tipo-precio-select">
+          <option value="plan_anual">Plan anual</option>
+          <option value="plan_trimestral">Plan trimestral</option>
+        </select>
+      </div>
+
+      <div class="linea-precio-manual" style="display:none;">
+        <label>Precio unitario (este servicio requiere precio manual)</label>
+        <input type="number" step="0.01" class="linea-precio-manual-input">
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <div style="flex:1;">
+          <label>Cantidad</label>
+          <input type="number" class="linea-cantidad" value="1" min="1" step="1">
+        </div>
+        <div style="flex:1;">
+          <label>Descuento línea (%)</label>
+          <input type="number" class="linea-descuento" value="0" min="0" step="0.01">
+        </div>
+      </div>
+
+      <p class="linea-precio-preview" style="font-size:13px; color:#555; margin-top:8px;"></p>
+    </div>
+  </template>
+
+<%- include('partials/layout-bottom') %>
+
+<script>
+(function() {
+  const descuentoMaxUsuario = <%= descuentoMaxUsuario %>;
+  let serviciosDeLaMarca = []; // cache de servicios de la marca actual
+
+  const marcaSelect = document.getElementById('marca_id');
+  const lineasContainer = document.getElementById('lineas-container');
+  const plantilla = document.getElementById('plantilla-linea');
+  const btnAgregarLinea = document.getElementById('btn-agregar-linea');
+  const form = document.getElementById('form-proforma');
+  const mensajeError = document.getElementById('mensaje-error');
+
+  async function cargarServiciosDeMarca(marcaId) {
+    const res = await fetch('/api/servicios?marca_id=' + marcaId);
+    serviciosDeLaMarca = await res.json();
+    document.querySelectorAll('.linea-servicio-id').forEach(poblarSelectServicio);
+  }
+
+  function poblarSelectServicio(select) {
+    const valorActual = select.value;
+    select.innerHTML = '<option value="">-- Línea personalizada --</option>';
+    serviciosDeLaMarca.forEach(function(s) {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.nombre + (s.categoria ? ' (' + s.categoria + ')' : '');
+      select.appendChild(opt);
+    });
+    if (valorActual) select.value = valorActual;
+  }
+
+  function agregarLinea() {
+    const clon = plantilla.content.cloneNode(true);
+    const div = clon.querySelector('.linea-servicio');
+    poblarSelectServicio(div.querySelector('.linea-servicio-id'));
+    lineasContainer.appendChild(div);
+    actualizarTotales();
+  }
+
+  lineasContainer.addEventListener('click', function(e) {
+    if (e.target.classList.contains('btn-quitar-linea')) {
+      e.target.closest('.linea-servicio').remove();
+      actualizarTotales();
+    }
+  });
+
+  lineasContainer.addEventListener('change', function(e) {
+    if (e.target.classList.contains('linea-servicio-id')) {
+      manejarCambioServicio(e.target.closest('.linea-servicio'));
+    }
+    actualizarTotales();
+  });
+
+  lineasContainer.addEventListener('input', function() {
+    actualizarTotales();
+  });
+
+  function manejarCambioServicio(lineaDiv) {
+    const servicioId = lineaDiv.querySelector('.linea-servicio-id').value;
+    const campoPersonalizada = lineaDiv.querySelector('.linea-personalizada');
+    const campoTipoPrecio = lineaDiv.querySelector('.linea-tipo-precio');
+    const campoPrecioManual = lineaDiv.querySelector('.linea-precio-manual');
+
+    if (!servicioId) {
+      campoPersonalizada.style.display = 'block';
+      campoTipoPrecio.style.display = 'none';
+      campoPrecioManual.style.display = 'block';
+      lineaDiv.querySelector('.linea-precio-manual-input').required = true;
+      return;
+    }
+
+    campoPersonalizada.style.display = 'none';
+    const servicio = serviciosDeLaMarca.find(function(s) { return String(s.id) === servicioId; });
+    if (!servicio) return;
+
+    if (!servicio.es_editable) {
+      campoTipoPrecio.style.display = 'none';
+      campoPrecioManual.style.display = 'none';
+    } else if (Number(servicio.precio_base) === 0 && servicio.precio_plan_anual === null && servicio.precio_plan_trimestral === null && servicio.precio_unico === null) {
+      campoTipoPrecio.style.display = 'none';
+      campoPrecioManual.style.display = 'block';
+    } else {
+      campoTipoPrecio.style.display = 'block';
+      campoPrecioManual.style.display = 'none';
+    }
+  }
+
+  function calcularPrecioLinea(lineaDiv) {
+    const servicioId = lineaDiv.querySelector('.linea-servicio-id').value;
+    const precioManualInput = lineaDiv.querySelector('.linea-precio-manual-input');
+
+    if (!servicioId) {
+      return Number(precioManualInput.value || 0);
+    }
+    const servicio = serviciosDeLaMarca.find(function(s) { return String(s.id) === servicioId; });
+    if (!servicio) return 0;
+
+    if (!servicio.es_editable) {
+      return Number(servicio.precio_unico || 0);
+    }
+    if (precioManualInput.style.display !== 'none' && lineaDiv.querySelector('.linea-precio-manual').style.display === 'block') {
+      return Number(precioManualInput.value || 0);
+    }
+    const tipoPrecio = lineaDiv.querySelector('.linea-tipo-precio-select').value;
+    if (tipoPrecio === 'plan_anual') return Number(servicio.precio_plan_anual || 0);
+    if (tipoPrecio === 'plan_trimestral') return Number(servicio.precio_plan_trimestral || 0);
+    return 0;
+  }
+
+  function actualizarTotales() {
+    let subtotalGeneral = 0;
+    let ivaTotal = 0;
+    const descGeneralPct = Number(document.getElementById('descuento_general_porcentaje').value || 0);
+
+    document.querySelectorAll('.linea-servicio').forEach(function(lineaDiv) {
+      const precioUnitario = calcularPrecioLinea(lineaDiv);
+      const cantidad = Number(lineaDiv.querySelector('.linea-cantidad').value || 0);
+      const descLineaPct = Number(lineaDiv.querySelector('.linea-descuento').value || 0);
+
+      const base = precioUnitario * cantidad;
+      const descLineaMonto = base * (descLineaPct / 100);
+      const neto = base - descLineaMonto;
+      subtotalGeneral += neto;
+
+      const preview = lineaDiv.querySelector('.linea-precio-preview');
+      preview.textContent = 'Precio unitario: $' + precioUnitario.toFixed(2) + ' — Subtotal línea: $' + neto.toFixed(2);
+    });
+
+    const descGeneralMonto = subtotalGeneral * (descGeneralPct / 100);
+    ivaTotal = (subtotalGeneral - descGeneralMonto) * 0.15;
+    const total = (subtotalGeneral - descGeneralMonto) + ivaTotal;
+
+    document.getElementById('resumen-subtotal').textContent = subtotalGeneral.toFixed(2);
+    document.getElementById('resumen-descuento').textContent = descGeneralMonto.toFixed(2);
+    document.getElementById('resumen-iva').textContent = ivaTotal.toFixed(2);
+    document.getElementById('resumen-total').textContent = total.toFixed(2);
+  }
+
+  btnAgregarLinea.addEventListener('click', agregarLinea);
+  document.getElementById('descuento_general_porcentaje').addEventListener('input', actualizarTotales);
+
+  marcaSelect.addEventListener('change', function() {
+    lineasContainer.innerHTML = '';
+    cargarServiciosDeMarca(marcaSelect.value).then(agregarLinea);
+  });
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    mensajeError.style.display = 'none';
+
+    const descGeneralPct = Number(document.getElementById('descuento_general_porcentaje').value || 0);
+    if (descGeneralPct > descuentoMaxUsuario) {
+      mostrarError('El descuento general (' + descGeneralPct + '%) excede tu máximo permitido (' + descuentoMaxUsuario + '%)');
+      return;
+    }
+
+    const lineas = [];
+    let errorLinea = null;
+    document.querySelectorAll('.linea-servicio').forEach(function(lineaDiv) {
+      const servicioId = lineaDiv.querySelector('.linea-servicio-id').value;
+      const descLineaPct = Number(lineaDiv.querySelector('.linea-descuento').value || 0);
+
+      if (descLineaPct > descuentoMaxUsuario) {
+        errorLinea = 'El descuento de una línea (' + descLineaPct + '%) excede tu máximo permitido (' + descuentoMaxUsuario + '%)';
+      }
+
+      const linea = {
+        cantidad: Number(lineaDiv.querySelector('.linea-cantidad').value || 1),
+        descuento_linea_porcentaje: descLineaPct
+      };
+
+      if (servicioId) {
+        linea.servicio_id = Number(servicioId);
+        const servicio = serviciosDeLaMarca.find(function(s) { return String(s.id) === servicioId; });
+        if (servicio && servicio.es_editable) {
+          const campoTipoPrecio = lineaDiv.querySelector('.linea-tipo-precio');
+          const campoPrecioManual = lineaDiv.querySelector('.linea-precio-manual');
+          if (campoTipoPrecio.style.display === 'block') {
+            linea.tipo_precio = lineaDiv.querySelector('.linea-tipo-precio-select').value;
+          } else if (campoPrecioManual.style.display === 'block') {
+            linea.precio_unitario_manual = Number(lineaDiv.querySelector('.linea-precio-manual-input').value || 0);
+          }
+        }
+      } else {
+        linea.descripcion_custom = lineaDiv.querySelector('.linea-descripcion').value;
+        linea.precio_unitario_manual = Number(lineaDiv.querySelector('.linea-precio-manual-input').value || 0);
+      }
+
+      lineas.push(linea);
+    });
+
+    if (errorLinea) {
+      mostrarError(errorLinea);
+      return;
+    }
+    if (lineas.length === 0) {
+      mostrarError('Agrega al menos una línea de servicio');
+      return;
+    }
+
+    const payload = {
+      marca_id: Number(marcaSelect.value),
+      cliente_id: Number(document.getElementById('cliente_id').value),
+      descuento_general_porcentaje: descGeneralPct,
+      fecha_inicio_curso: document.getElementById('fecha_inicio_curso').value || undefined,
+      condiciones_pago: document.getElementById('condiciones_pago').value || undefined,
+      lineas: lineas
+    };
+
+    const btnGuardar = document.getElementById('btn-guardar');
+    btnGuardar.disabled = true;
+    btnGuardar.textContent = 'Creando...';
+
+    try {
+      const res = await fetch('/api/proformas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        mostrarError(data.error || 'Error al crear la proforma');
+        btnGuardar.disabled = false;
+        btnGuardar.textContent = 'Crear proforma';
+        return;
+      }
+
+      window.location.href = '/admin/proformas';
+    } catch (err) {
+      mostrarError('Error de conexión: ' + err.message);
+      btnGuardar.disabled = false;
+      btnGuardar.textContent = 'Crear proforma';
+    }
+  });
+
+  function mostrarError(msg) {
+    mensajeError.textContent = 'Error: ' + msg;
+    mensajeError.style.display = 'block';
+    mensajeError.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  cargarServiciosDeMarca(marcaSelect.value).then(agregarLinea);
+})();
+</script>

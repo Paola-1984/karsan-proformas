@@ -103,6 +103,12 @@ const createProforma = async (req, res) => {
       return res.status(400).json({ error: 'marca_id, cliente_id y al menos una línea (lineas[]) son obligatorios' });
     }
 
+        // Si el usuario tiene una marca asignada (ASESOR restringido), no puede cotizar para otra marca
+    if (req.usuario.marca_id !== null && req.usuario.marca_id !== undefined && Number(req.usuario.marca_id) !== Number(marca_id)) {
+      connection.release();
+      return res.status(403).json({ error: 'No tienes permiso para generar proformas de esta marca' });
+    }
+
     // Consulta el descuento máximo ACTUAL del usuario (no confía en el token, que puede estar desactualizado)
     const [usuarioRows] = await pool.query('SELECT descuento_max_permitido FROM usuarios WHERE id = ?', [usuario_id]);
     if (usuarioRows.length === 0) {
@@ -340,8 +346,9 @@ const updateEstadoProforma = async (req, res) => {
 };
 
 // Para el panel admin: trae proformas con nombre de marca y cliente ya resueltos (JOIN)
-const getProformasParaPanel = async () => {
-  const [rows] = await pool.query(`
+// Si se pasa marcaIdUsuario (ASESOR restringido), filtra solo esa marca. Si es null (ADMIN), trae todas.
+const getProformasParaPanel = async (marcaIdUsuario) => {
+  let query = `
     SELECT
       p.id, p.numero_correlativo, p.fecha_emision, p.fecha_vencimiento,
       p.total, p.estado,
@@ -350,8 +357,15 @@ const getProformasParaPanel = async () => {
     FROM proformas p
     JOIN marcas m ON p.marca_id = m.id
     JOIN clientes c ON p.cliente_id = c.id
-    ORDER BY p.creado_en DESC
-  `);
+  `;
+  const params = [];
+  if (marcaIdUsuario !== null && marcaIdUsuario !== undefined) {
+    query += ' WHERE p.marca_id = ?';
+    params.push(marcaIdUsuario);
+  }
+  query += ' ORDER BY p.creado_en DESC';
+
+  const [rows] = await pool.query(query, params);
   return rows;
 };
 
