@@ -159,6 +159,20 @@
     actualizarTotales();
   });
 
+    // Determina cómo debe cotizarse un servicio, según qué campos de precio tiene realmente cargados
+  function determinarModoPrecio(servicio) {
+    if (!servicio.es_editable) {
+      return 'fijo'; // Escuela: siempre precio_unico automático
+    }
+    const tieneAnual = servicio.precio_plan_anual !== null;
+    const tieneTrimestral = servicio.precio_plan_trimestral !== null;
+    const tieneUnico = servicio.precio_unico !== null;
+
+    if (tieneAnual && tieneTrimestral) return 'planes';
+    if (tieneUnico) return 'unico_editable'; // Editable pero venta puntual (ej. "Creación y configuración de Facebook")
+    return 'manual'; // Caso especial: todo en null (ej. "Movilización para grabaciones")
+  }
+
   function manejarCambioServicio(lineaDiv) {
     const servicioId = lineaDiv.querySelector('.linea-servicio-id').value;
     const campoPersonalizada = lineaDiv.querySelector('.linea-personalizada');
@@ -177,19 +191,22 @@
     const servicio = serviciosDeLaMarca.find(function(s) { return String(s.id) === servicioId; });
     if (!servicio) return;
 
-    if (!servicio.es_editable) {
+    const modo = determinarModoPrecio(servicio);
+
+    if (modo === 'fijo' || modo === 'unico_editable') {
       campoTipoPrecio.style.display = 'none';
       campoPrecioManual.style.display = 'none';
-    } else if (Number(servicio.precio_base) === 0 && servicio.precio_plan_anual === null && servicio.precio_plan_trimestral === null && servicio.precio_unico === null) {
+    } else if (modo === 'manual') {
       campoTipoPrecio.style.display = 'none';
       campoPrecioManual.style.display = 'block';
     } else {
+      // modo === 'planes'
       campoTipoPrecio.style.display = 'block';
       campoPrecioManual.style.display = 'none';
     }
   }
 
-  function calcularPrecioLinea(lineaDiv) {
+    function calcularPrecioLinea(lineaDiv) {
     const servicioId = lineaDiv.querySelector('.linea-servicio-id').value;
     const precioManualInput = lineaDiv.querySelector('.linea-precio-manual-input');
 
@@ -199,12 +216,15 @@
     const servicio = serviciosDeLaMarca.find(function(s) { return String(s.id) === servicioId; });
     if (!servicio) return 0;
 
-    if (!servicio.es_editable) {
+    const modo = determinarModoPrecio(servicio);
+
+    if (modo === 'fijo' || modo === 'unico_editable') {
       return Number(servicio.precio_unico || 0);
     }
-    if (precioManualInput.style.display !== 'none' && lineaDiv.querySelector('.linea-precio-manual').style.display === 'block') {
+    if (modo === 'manual') {
       return Number(precioManualInput.value || 0);
     }
+    // modo === 'planes'
     const tipoPrecio = lineaDiv.querySelector('.linea-tipo-precio-select').value;
     if (tipoPrecio === 'plan_anual') return Number(servicio.precio_plan_anual || 0);
     if (tipoPrecio === 'plan_trimestral') return Number(servicio.precio_plan_trimestral || 0);
@@ -273,15 +293,16 @@
         descuento_linea_porcentaje: descLineaPct
       };
 
-      if (servicioId) {
+            if (servicioId) {
         linea.servicio_id = Number(servicioId);
         const servicio = serviciosDeLaMarca.find(function(s) { return String(s.id) === servicioId; });
         if (servicio && servicio.es_editable) {
-          const campoTipoPrecio = lineaDiv.querySelector('.linea-tipo-precio');
-          const campoPrecioManual = lineaDiv.querySelector('.linea-precio-manual');
-          if (campoTipoPrecio.style.display === 'block') {
+          const modo = determinarModoPrecio(servicio);
+          if (modo === 'planes') {
             linea.tipo_precio = lineaDiv.querySelector('.linea-tipo-precio-select').value;
-          } else if (campoPrecioManual.style.display === 'block') {
+          } else if (modo === 'unico_editable') {
+            linea.tipo_precio = 'unico';
+          } else if (modo === 'manual') {
             linea.precio_unitario_manual = Number(lineaDiv.querySelector('.linea-precio-manual-input').value || 0);
           }
         }
