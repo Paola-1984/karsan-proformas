@@ -13,8 +13,11 @@ const construirLinkWhatsapp = (numero) => {
   return `https://wa.me/${soloDigitos}`;
 };
 
-const renderContacto = (marca) => {
+  const renderContacto = (marca) => {
   const items = [];
+  if (marca.direccion) {
+    items.push(`<span class="contacto-link">📍 ${marca.direccion}</span>`);
+  }
   if (marca.correo_remitente) {
     items.push(`<a href="mailto:${marca.correo_remitente}" class="contacto-link">✉️ ${marca.correo_remitente}</a>`);
   }
