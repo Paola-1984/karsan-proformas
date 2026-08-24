@@ -13,7 +13,7 @@ const construirLinkWhatsapp = (numero) => {
   return `https://wa.me/${soloDigitos}`;
 };
 
-  const renderContacto = (marca) => {
+const renderContacto = (marca) => {
   const items = [];
   if (marca.direccion) {
     items.push(`<span class="contacto-link">📍 ${marca.direccion}</span>`);
@@ -128,54 +128,118 @@ const construirHtmlProforma = (proforma, lineas, marca, cliente, portafolio) => 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Proforma ${proforma.numero_correlativo} - ${marca.nombre}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --color-primario: ${marca.color_primario};
     --color-secundario: ${marca.color_secundario};
+    --amarillo-acento: #F4DC00;
+    --fondo: #F5F6F8;
+    --texto: #1C2430;
+    --texto-suave: #5B6472;
+    --borde: #E4E7EC;
+    --card-bg: #FFFFFF;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; color: #222; background: #f4f4f4; line-height: 1.5; }
-  .contenedor { max-width: 800px; margin: 0 auto; background: #fff; }
-  header { background: var(--color-primario); color: #fff; padding: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-  header img { max-height: 60px; }
+  body { font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif; color: var(--texto); background: var(--fondo); line-height: 1.6; }
+  .contenedor { max-width: 800px; margin: 0 auto; padding: 24px 16px 60px; }
+  header {
+    background: linear-gradient(135deg, var(--color-primario), #16233d);
+    color: #fff; padding: 32px 30px; border-radius: 16px;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+    box-shadow: 0 8px 24px rgba(36,65,114,0.18);
+  }
+  header img { max-height: 56px; }
   .numero-proforma { text-align: right; }
-  .numero-proforma .numero { font-size: 1.4em; font-weight: bold; }
-    .badge-estado { display: inline-block; padding: 4px 12px; border-radius: 12px; background: var(--color-secundario); color: #fff; font-size: 0.85em; font-weight: bold; margin-top: 5px; }
-  main { padding: 30px; }
-  .datos-cliente { display: flex; justify-content: space-between; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+  .numero-proforma .numero { font-size: 1.5em; font-weight: 800; letter-spacing: 0.3px; }
+  .numero-proforma div { font-size: 0.85em; opacity: 0.85; margin-top: 2px; }
+  .badge-estado {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px 5px 10px; border-radius: 20px; background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.35);
+    color: #fff; font-size: 0.8em; font-weight: 700; letter-spacing: 0.4px; margin-top: 8px;
+  }
+  .badge-estado::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--amarillo-acento); display: inline-block; }
+  main { padding: 0; }
+    .card {
+    background: var(--card-bg); border: 1px solid var(--borde); border-radius: 14px;
+    padding: 26px 28px; margin-top: 22px; box-shadow: 0 2px 10px rgba(36,65,114,0.05);
+    animation: fadeInUp 0.5s ease backwards;
+  }
+  .card:nth-of-type(1) { animation-delay: 0.05s; }
+  .card:nth-of-type(2) { animation-delay: 0.12s; }
+  .card:nth-of-type(3) { animation-delay: 0.19s; }
+  .card:nth-of-type(4) { animation-delay: 0.26s; }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card { animation: none; }
+  }
+  .card h2 {
+    font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.6px;
+    color: var(--color-primario); font-weight: 700; margin-bottom: 14px;
+  }
+  .datos-cliente { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
   .datos-cliente div { flex: 1; min-width: 200px; }
-  .datos-cliente h3 { color: var(--color-primario); font-size: 0.9em; text-transform: uppercase; margin-bottom: 5px; }
-  table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-  th { background: var(--color-primario); color: #fff; padding: 10px; text-align: left; font-size: 0.9em; }
-  td { padding: 10px; border-bottom: 1px solid #eee; }
+  .datos-cliente .nombre-cliente { font-size: 1.1em; font-weight: 700; color: var(--texto); }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: var(--fondo); color: var(--texto-suave); padding: 10px 12px;
+    text-align: left; font-size: 0.75em; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 700;
+    border-bottom: 2px solid var(--borde);
+  }
+    td { padding: 12px; border-bottom: 1px solid var(--borde); font-size: 0.95em; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background 0.15s ease; }
+  tbody tr:hover { background: var(--fondo); }
   .centrado { text-align: center; }
   .derecha { text-align: right; }
-  .totales { margin-left: auto; width: 280px; margin-top: 15px; }
-  .totales div { display: flex; justify-content: space-between; padding: 6px 0; }
-  .totales .total-final { font-weight: bold; font-size: 1.2em; border-top: 2px solid var(--color-primario); padding-top: 10px; margin-top: 5px; }
-  .condiciones { margin-top: 20px; padding: 15px; background: #f9f9f9; border-left: 4px solid var(--color-secundario); font-size: 0.9em; }
-  .seccion-portafolio { margin-top: 35px; }
-  .seccion-portafolio h2 { color: var(--color-primario); margin-bottom: 15px; }
+  .totales { margin-left: auto; width: 280px; margin-top: 18px; }
+  .totales div { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.95em; }
+  .totales .total-final {
+    font-weight: 800; font-size: 1.25em; color: var(--color-primario);
+    border-top: none; border-left: 4px solid var(--amarillo-acento);
+    padding: 10px 0 10px 12px; margin-top: 8px;
+  }
+  .condiciones { font-size: 0.9em; color: var(--texto-suave); }
+  .seccion-portafolio h2 { margin-bottom: 15px; }
   .portafolio-item { margin-bottom: 20px; }
-  .portafolio-item h3 { font-size: 1em; margin-bottom: 5px; }
-  .botones-accion { display: flex; gap: 10px; margin: 25px 0; }
-  .btn-aceptar, .btn-rechazar { flex: 1; padding: 14px; border: none; border-radius: 6px; font-size: 1em; font-weight: bold; cursor: pointer; }
+  .portafolio-item h3 { font-size: 1em; margin-bottom: 5px; font-weight: 700; }
+  .botones-accion { display: flex; gap: 10px; margin-top: 22px; }
+  .btn-aceptar, .btn-rechazar {
+    flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 0.95em;
+    font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
   .btn-aceptar { background: #2e7d32; color: #fff; }
   .btn-rechazar { background: #c62828; color: #fff; }
+  .btn-aceptar:hover, .btn-rechazar:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
   #mensaje-respuesta { color: #c62828; margin-top: 10px; font-size: 0.9em; }
-  .estado-final { padding: 15px; border-radius: 6px; text-align: center; font-weight: bold; margin: 25px 0; }
+  .estado-final { padding: 16px; border-radius: 10px; text-align: center; font-weight: 700; margin-top: 22px; }
   .estado-aceptada { background: #e8f5e9; color: #2e7d32; }
   .estado-rechazada { background: #ffebee; color: #c62828; }
   .estado-vencida { background: #fff3e0; color: #e65100; }
-  footer { background: #f4f4f4; padding: 25px 30px; text-align: center; font-size: 0.9em; }
-  .contacto-link { display: inline-block; margin: 5px 10px; color: var(--color-primario); text-decoration: none; }
+  footer { margin-top: 22px; padding: 28px 24px; text-align: center; font-size: 0.9em; color: var(--texto-suave); }
+  .contacto-link { display: inline-block; margin: 5px 10px; color: var(--color-primario); text-decoration: none; font-weight: 600; }
   .contacto-pendiente { color: #999; font-style: italic; }
   .redes-sociales { margin-top: 10px; font-size: 0.85em; }
-  .redes-sociales a { color: #666; text-decoration: none; }
-  @media print {
-    body { background: #fff; }
-    @page { size: A4; margin: 15mm; }
+  .redes-sociales a { color: var(--texto-suave); text-decoration: none; }
+          @media print {
+    body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    @page { size: A4; margin: 10mm; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     .botones-accion { display: none; }
+    .contenedor { padding: 0; }
+    .card { box-shadow: none; animation: none; opacity: 1; transform: none; break-inside: avoid; margin-top: 10px; padding: 14px 20px; }
+    .card h2 { margin-bottom: 8px; }
+    header { box-shadow: none; break-inside: avoid; padding: 16px 20px; }
+    .totales { margin-top: 10px; }
+    .estado-final { margin-top: 10px; padding: 10px; }
+    footer { break-inside: avoid; margin-top: 10px; padding: 10px; }
+    .no-imprimir { display: none; }
   }
 </style>
 </head>
@@ -194,41 +258,46 @@ const construirHtmlProforma = (proforma, lineas, marca, cliente, portafolio) => 
   </header>
 
   <main>
-    <div class="datos-cliente">
+    <div class="card datos-cliente">
       <div>
-        <h3>Cliente</h3>
-        <div>${cliente.nombre_razon_social}</div>
+        <h2>Cliente</h2>
+        <div class="nombre-cliente">${cliente.nombre_razon_social}</div>
         <div>${cliente.identificacion}</div>
         ${cliente.email ? `<div>${cliente.email}</div>` : ''}
       </div>
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Servicio</th>
-          <th class="centrado">Cant.</th>
-          <th class="derecha">Precio unit.</th>
-          <th class="derecha">Total (IVA incl.)</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${renderLineas(lineas)}
-      </tbody>
-    </table>
+    <div class="card">
+      <h2>Servicios cotizados</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Servicio</th>
+            <th class="centrado">Cant.</th>
+            <th class="derecha">Precio unit.</th>
+            <th class="derecha">Total (IVA incl.)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${renderLineas(lineas)}
+        </tbody>
+      </table>
 
-    <div class="totales">
-      <div><span>Subtotal</span><span>${formatMoney(proforma.subtotal)}</span></div>
-      ${Number(proforma.descuento_general) > 0 ? `<div><span>Descuento general</span><span>-${formatMoney(proforma.descuento_general)}</span></div>` : ''}
-      <div><span>IVA${ivaLabel}</span><span>${formatMoney(proforma.monto_iva)}</span></div>
-      <div class="total-final"><span>Total</span><span>${formatMoney(proforma.total)}</span></div>
+      <div class="totales">
+        <div><span>Subtotal</span><span>${formatMoney(proforma.subtotal)}</span></div>
+        ${Number(proforma.descuento_general) > 0 ? `<div><span>Descuento general</span><span>-${formatMoney(proforma.descuento_general)}</span></div>` : ''}
+        <div><span>IVA${ivaLabel}</span><span>${formatMoney(proforma.monto_iva)}</span></div>
+        <div class="total-final"><span>Total</span><span>${formatMoney(proforma.total)}</span></div>
+      </div>
+
+      ${proforma.condiciones_pago ? `<div class="condiciones" style="margin-top:16px;"><strong>Condiciones de pago:</strong> ${proforma.condiciones_pago}</div>` : ''}
     </div>
 
-    ${proforma.condiciones_pago ? `<div class="condiciones"><strong>Condiciones de pago:</strong> ${proforma.condiciones_pago}</div>` : ''}
+        ${portafolio && portafolio.length > 0 ? `<div class="card no-imprimir">${renderPortafolio(portafolio)}</div>` : ''}
 
-    ${renderPortafolio(portafolio)}
-
-    ${renderBotonesAccion(proforma.numero_correlativo, proforma.estado)}
+    <div class="card">
+      ${renderBotonesAccion(proforma.numero_correlativo, proforma.estado)}
+    </div>
   </main>
 
   <footer>
