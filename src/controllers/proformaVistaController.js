@@ -25,12 +25,20 @@ const renderContacto = (marca) => {
     items.push(`<a href="tel:${marca.telefono}" class="contacto-link">📞 ${marca.telefono}</a>`);
   }
   if (marca.whatsapp) {
-    items.push(`<a href="${construirLinkWhatsapp(marca.whatsapp)}" target="_blank" rel="noopener" class="contacto-link">💬 WhatsApp</a>`);
+    const iconoWhatsapp = `<svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align:-4px;margin-right:4px;" fill="#25D366"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.76.46 3.45 1.32 4.94L2 22l5.2-1.3A9.94 9.94 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm5.2 14.3c-.22.62-1.28 1.2-1.77 1.24-.45.04-.9.06-1.45-.09-.33-.09-.76-.24-1.31-.47-2.3-.99-3.8-3.3-3.92-3.46-.11-.15-.94-1.25-.94-2.38 0-1.13.6-1.68.81-1.91.21-.23.46-.29.61-.29.15 0 .3 0 .43.01.14.01.32-.05.5.38.19.46.64 1.58.7 1.69.06.11.1.24.02.39-.08.15-.12.24-.24.37-.12.13-.25.29-.36.39-.12.11-.24.23-.11.46.13.23.6 1 1.29 1.62.89.79 1.63 1.04 1.87 1.16.24.12.38.1.52-.06.15-.15.62-.72.79-.97.17-.25.34-.2.56-.12.23.08 1.45.68 1.7.8.25.12.41.18.47.29.06.1.06.6-.16 1.22z"/></svg>`;
+    items.push(`<a href="${construirLinkWhatsapp(marca.whatsapp)}" target="_blank" rel="noopener" class="contacto-link">${iconoWhatsapp}WhatsApp</a>`);
   }
   if (marca.sitio_web) {
     items.push(`<a href="https://${marca.sitio_web.replace(/^https?:\/\//, '')}" target="_blank" rel="noopener" class="contacto-link">🌐 ${marca.sitio_web}</a>`);
   }
   return items.length > 0 ? items.join('') : '<span class="contacto-pendiente">Datos de contacto próximamente</span>';
+};
+
+const iconosRedes = {
+  Facebook: `<svg viewBox="0 0 24 24" width="20" height="20" fill="#1877F2"><path d="M22 12a10 10 0 10-11.5 9.87v-6.98H7.9V12h2.6V9.8c0-2.57 1.53-3.99 3.87-3.99 1.12 0 2.3.2 2.3.2v2.53h-1.3c-1.28 0-1.68.8-1.68 1.62V12h2.86l-.46 2.89h-2.4v6.98A10 10 0 0022 12z"/></svg>`,
+  Instagram: `<svg viewBox="0 0 24 24" width="20" height="20"><defs><linearGradient id="igGrad" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#FEDA75"/><stop offset="30%" stop-color="#FA7E1E"/><stop offset="60%" stop-color="#D62976"/><stop offset="85%" stop-color="#962FBF"/><stop offset="100%" stop-color="#4F5BD5"/></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="5" fill="url(#igGrad)"/><path d="M12 7a5 5 0 100 10 5 5 0 000-10zm0 8.2a3.2 3.2 0 110-6.4 3.2 3.2 0 010 6.4z" fill="#fff"/><circle cx="17.4" cy="6.6" r="1.2" fill="#fff"/></svg>`,
+  TikTok: `<svg viewBox="0 0 24 24" width="20" height="20" fill="#000000"><path d="M16.5 2h-3v13.5a2.5 2.5 0 1 1-2.5-2.5c.19 0 .38.02.56.05V9.9a5.5 5.5 0 1 0 5.94 5.48c0-.08 0-.15 0-.23V8.4a7.9 7.9 0 0 0 4 1.1V6.4a4.9 4.9 0 0 1-4-3.4 4.9 4.9 0 0 1-1-1z"/></svg>`,
+  LinkedIn: `<svg viewBox="0 0 24 24" width="20" height="20" fill="#0A66C2"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.03-1.85-3.03-1.86 0-2.15 1.45-2.15 2.94v5.66H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>`
 };
 
 const renderRedesSociales = (marca) => {
@@ -42,7 +50,7 @@ const renderRedesSociales = (marca) => {
   ].filter(r => r.url);
 
   if (redes.length === 0) return '';
-  return `<div class="redes-sociales">${redes.map(r => `<a href="${r.url}" target="_blank" rel="noopener">${r.nombre}</a>`).join(' &middot; ')}</div>`;
+  return `<div class="redes-sociales">${redes.map(r => `<a href="${r.url}" target="_blank" rel="noopener" aria-label="${r.nombre}" title="${r.nombre}" style="display:inline-flex;margin:0 6px;vertical-align:middle;">${iconosRedes[r.nombre]}</a>`).join('')}</div>`;
 };
 
 const renderPortafolio = (items) => {
@@ -227,7 +235,7 @@ const construirHtmlProforma = (proforma, lineas, marca, cliente, portafolio) => 
   .contacto-pendiente { color: #999; font-style: italic; }
   .redes-sociales { margin-top: 10px; font-size: 0.85em; }
   .redes-sociales a { color: var(--texto-suave); text-decoration: none; }
-          @media print {
+    @media print {
     body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     @page { size: A4; margin: 10mm; }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
