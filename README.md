@@ -1,4 +1,3 @@
-````markdown
 # Karsan Proformas
 
 Sistema de gestión de cotizaciones comerciales (proformas) para **Karsan Corporación**, empresa de marketing digital y educación con sede en Quito, Ecuador. Administra dos marcas/unidades de negocio con catálogos, reglas de precios y ramas visuales independientes desde una sola base de datos.
@@ -209,4 +208,103 @@ node_modules/
 
 - Vista `servicios.ejs`: tabla con Marca, Categoría, Nombre, **Descripción**, Tipo, Precio(s), IVA y Acciones.
 - La columna Precio(s) determina qué mostrar consultando directamente los campos de precio (`precio_unico !== null` → precio único; si no, `precio_plan_anual !== null` → plan anual/trimestral; si ninguno, "Manual") — **no** usa `es_editable` para esa decisión (ver sección 7).
-- Las 55 descripciones del catálogo fueron verificadas exhaustivamente
+- Las 55 descripciones del catálogo fueron verificadas exhaustivamente contra el Excel oficial "Nuevos Precios" del cliente — coinciden exactamente.
+
+### 5.3 Vista pública de la proforma (plantilla HTML)
+
+- Renderizada íntegramente en el servidor en cada visita (`proformaVistaController.js` → `construirHtmlProforma()`), no es un archivo estático ni un PDF adjunto.
+- **Identidad visual por marca:** variables CSS (`--color-primario`, `--color-secundario`) tomadas de la tabla `marcas`; tipografía Montserrat (Google Fonts) según manual de marca; acento `#F4DC00` de uso puntual (franja del total, badge de estado).
+- **Layout en tarjetas** (`.card`) con sombra suave, animación de entrada `fade-in-up` (respeta `prefers-reduced-motion`), hover en filas de tabla y botones.
+- **Contacto y redes sociales dinámicos:** `renderContacto()` y `renderRedesSociales()` muestran solo los campos que existen en BD para esa marca, con iconografía SVG oficial embebida (WhatsApp verde `#25D366`, Facebook azul `#1877F2`, Instagram con degradado oficial, TikTok negro — no dependen de servicios externos).
+- **Impresión A4:** `@media print` fuerza el respeto de colores de fondo, oculta el portafolio (`.no-imprimir`) y los botones de acción, y ajusta márgenes/paddings para que el contenido entre en una sola hoja.
+
+### 5.4 Reglas de negocio no evidentes (documentadas para evitar falsos "bugs")
+
+- `direccion = NULL` en Karsan Escuela Digital es **intencional** (modelo de capacitación itinerante, sin local fijo), no un dato faltante.
+- Todos los campos de contacto/identidad de Dr. BACH permanecen en `NULL` o placeholder (`pendiente@bachagencia.com`) hasta que concluya el trámite de registro de marca ante el SENADI.
+- El logo actual de Karsan Escuela Digital (`sinslogan-blanco.png`) se mantiene definitivamente — se evaluó reemplazarlo por una versión de mayor resolución y se decidió no hacerlo.
+
+---
+
+## 6. Instrucciones para levantar el proyecto localmente
+
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/Paola-1984/karsan-proformas.git
+cd karsan-proformas
+git checkout dev
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Crear la base de datos MySQL y las tablas
+#    (importar el schema.sql correspondiente o crear las tablas descritas en la sección 3)
+
+# 4. Crear el archivo .env en la raíz (ver sección 4.1)
+
+# 5. Levantar el servidor en modo desarrollo (con recarga automática)
+npm run dev
+
+# El servidor queda disponible en:
+# http://localhost:3000
+
+# Panel de administración:
+# http://localhost:3000/admin/login
+
+# Vista pública de una proforma:
+# http://localhost:3000/proforma/{numero_correlativo}
+```
+
+### Resolución de problemas comunes (Windows)
+
+```bash
+# Puerto 3000 ocupado
+netstat -ano | findstr :3000
+taskkill /PID <numero_de_pid> /F
+
+# Problemas de codificación en la terminal de MySQL
+chcp 65001
+mysql -u root -p --default-character-set=utf8mb4
+```
+
+> **Nota sobre nodemon:** en algunos casos, tras varias ediciones seguidas del mismo archivo, nodemon no reinicia automáticamente. Si no aparece `[nodemon] restarting due to changes...` en la terminal tras guardar, detener el proceso (`Ctrl+C`) y volver a correr `npm run dev` manualmente.
+
+---
+
+## 7. Estado actual del desarrollo
+
+### Completado
+
+- [x] Backend Express + MySQL con estructura de rutas/controladores/middlewares
+- [x] Autenticación JWT (cookie httpOnly para panel, JSON para API)
+- [x] Panel de administración completo en EJS: login, proformas, clientes, servicios (solo ADMIN), portafolio (solo ADMIN)
+- [x] Lógica de cálculo de precios con los cuatro modos (`determinarModoPrecio`)
+- [x] Envío de proformas por email (Nodemailer)
+- [x] Catálogo de 55 servicios auditado fila por fila contra la lista de precios oficial del cliente (precios y descripciones)
+- [x] Limpieza de registros de prueba en `servicios_catalogo`
+- [x] Entorno de desarrollo con `nodemon`
+- [x] Rediseño visual completo de la proforma pública (tipografía de marca, tarjetas, interactividad, impresión A4 optimizada)
+- [x] Logos SVG oficiales en el footer (WhatsApp, Facebook, Instagram, TikTok)
+- [x] Redes sociales oficiales de Karsan Escuela Digital cargadas y confirmadas
+- [x] **Bug corregido:** columna "Precio(s)" del catálogo admin mostraba `$0.00` en servicios de Dr. BACH con `precio_unico`, por usar `es_editable` como criterio en vez de verificar directamente los campos de precio
+- [x] Columna "Descripción" agregada a la tabla del catálogo admin
+- [x] Incidente de seguridad resuelto: `.env` removido del control de versiones, credenciales rotadas
+
+### Pendiente
+
+- [ ] Todos los datos oficiales de Dr. BACH (nombre comercial, correo, teléfono, redes, hosting) — bloqueados hasta la resolución del trámite ante el SENADI
+- [ ] Definir `APP_BASE_URL` real de producción para que los enlaces de email funcionen fuera de `localhost`
+- [ ] Despliegue a producción
+
+---
+
+## 8. Convenciones del proyecto
+
+- **Commits:** siempre precedidos de `git status` → verificar ausencia de `.env` → `git --no-pager diff` para revisar cambios.
+- **Nombres reales de tablas/columnas** (para evitar errores de sintaxis SQL por nombres asumidos):
+  - La tabla de servicios se llama `servicios_catalogo`, no `servicios`.
+  - `es_editable`, no `editable`.
+  - `correo_remitente`, no `correo`.
+  - `tiktok_url`, `facebook_url`, `instagram_url`, `linkedin_url` (con sufijo `_url`), no a secas.
+- **`es_editable` ≠ esquema de precio:** no usar este campo para decidir si un servicio tiene precio único o plan anual/trimestral — consultar directamente `precio_unico`/`precio_plan_anual`.
+- **Contraste de marca:** `color_secundario` puede ser `#000000` — verificar siempre el contraste de cualquier texto/elemento nuevo contra ese fondo.
