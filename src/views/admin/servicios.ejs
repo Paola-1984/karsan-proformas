@@ -11,6 +11,7 @@
         <th>Marca</th>
         <th>Categoría</th>
         <th>Nombre</th>
+        <th>Descripción</th>
         <th>Tipo</th>
         <th>Precio(s)</th>
         <th>IVA</th>
@@ -23,13 +24,16 @@
           <td><%= s.marca_nombre %></td>
           <td><%= s.categoria || '—' %></td>
           <td><%= s.nombre %></td>
+          <td style="max-width:280px; font-size:0.9em; color:#555;"><%= s.descripcion || '—' %></td>
           <td><%= s.es_editable ? 'Editable' : 'Fijo' %></td>
           <td>
-            <% if (s.es_editable) { %>
+            <% if (s.precio_unico !== null) { %>
+              $<%= Number(s.precio_unico).toFixed(2) %>
+            <% } else if (s.precio_plan_anual !== null) { %>
               Anual: $<%= Number(s.precio_plan_anual).toFixed(2) %><br>
               Trimestral: $<%= Number(s.precio_plan_trimestral).toFixed(2) %>
             <% } else { %>
-              $<%= Number(s.precio_unico).toFixed(2) %>
+              <span style="color:#888; font-style:italic;">Manual</span>
             <% } %>
           </td>
           <td><%= s.iva_porcentaje %>%</td>
@@ -45,7 +49,7 @@
 
       <% if (servicios.length === 0) { %>
         <tr>
-          <td colspan="7" style="text-align:center; color:#888;">No hay servicios registrados todavía.</td>
+          <td colspan="8" style="text-align:center; color:#888;">No hay servicios registrados todavía.</td>
         </tr>
       <% } %>
     </tbody>
