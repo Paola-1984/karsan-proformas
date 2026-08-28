@@ -32,8 +32,16 @@
       <input type="checkbox" id="es_editable" name="es_editable" value="true"
         <%= servicio && servicio.es_editable ? 'checked' : '' %>
         onchange="togglePrecios()" style="width:auto; display:inline-block; margin-right:8px;">
-      ¿Es editable? (BACH = sí, catálogo por planes / Escuela = no, precio fijo)
+      ¿Es editable por el asesor al armar una proforma? (no determina el esquema de precio)
     </label>
+
+    <div id="campo-esquema-precio" class="campo-condicional">
+      <label for="esquema_precio">Esquema de precio</label>
+      <select id="esquema_precio" name="esquema_precio" onchange="togglePrecios()">
+        <option value="unico" <%= (!servicio || servicio.precio_unico !== null) ? 'selected' : '' %>>Precio único</option>
+        <option value="plan" <%= (servicio && servicio.precio_plan_anual !== null) ? 'selected' : '' %>>Plan (anual + trimestral)</option>
+      </select>
+    </div>
 
     <div id="campo-precio-unico" class="campo-condicional">
       <label for="precio_unico">Precio único</label>
@@ -58,8 +66,21 @@
   <script>
     function togglePrecios() {
       const esEditable = document.getElementById('es_editable').checked;
-      document.getElementById('campo-precio-unico').classList.toggle('visible', !esEditable);
-      document.getElementById('campo-precio-planes').classList.toggle('visible', esEditable);
+      const esquemaSelector = document.getElementById('campo-esquema-precio');
+
+      if (!esEditable) {
+        // No editable (catálogo fijo, ej. Escuela Digital): siempre precio único, sin opción de elegir
+        esquemaSelector.classList.remove('visible');
+        document.getElementById('campo-precio-unico').classList.add('visible');
+        document.getElementById('campo-precio-planes').classList.remove('visible');
+        return;
+      }
+
+      // Editable (ej. Dr. BACH): puede ser único o plan, según lo que elija el admin
+      esquemaSelector.classList.add('visible');
+      const esquema = document.getElementById('esquema_precio').value;
+      document.getElementById('campo-precio-unico').classList.toggle('visible', esquema === 'unico');
+      document.getElementById('campo-precio-planes').classList.toggle('visible', esquema === 'plan');
     }
     // Ejecutar al cargar la página, para reflejar el estado correcto si es edición
     togglePrecios();
